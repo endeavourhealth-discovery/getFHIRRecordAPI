@@ -16,7 +16,6 @@
     <maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>
     <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
     <maven-dependency-plugin.version>3.1.1</maven-dependency-plugin.version>
-    <java.version>1.8</java.version>
   </properties>
 
   <dependencyManagement>
