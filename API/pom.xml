@@ -1,36 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <parent>
-    <groupId>org.endeavourhealth.getFHIRRecordAPI</groupId>
-    <artifactId>getFHIRRecordAPI</artifactId>
-    <version>1.0-SNAPSHOT</version>
-  </parent>
-  <modelVersion>4.0.0</modelVersion>
 
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.endeavourhealth.api</groupId>
   <artifactId>api</artifactId>
-  <packaging>war</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.endeavourhealth</groupId>
+        <artifactId>discovery-versions</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <properties>
-    <sonar.projectKey>endeavourhealth-discovery_getFHIRRecordAPI::api</sonar.projectKey>
+    <java.version>1.8</java.version>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <maven-compiler-plugin.version>3.1</maven-compiler-plugin.version>
+    <maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>
+    <maven-dependency-plugin.version>3.1.1</maven-dependency-plugin.version>
+    <maven-deploy-plugin.version>2.4</maven-deploy-plugin.version>
+    <maven-sonar-plugin.version>3.5.0.1254</maven-sonar-plugin.version>
+    <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
+
+    <sonar.projectKey>endeavourhealth-discovery_DataSharingManager::api</sonar.projectKey>
     <sonar.exclusions>**/docs/**/*</sonar.exclusions>
   </properties>
 
+
+
   <dependencies>
+
     <dependency>
-      <groupId>org.endeavourhealth.getFHIRRecordAPI</groupId>
+      <groupId>org.endeavourhealth.recordviewer.common</groupId>
       <artifactId>common</artifactId>
-      <version>${project.version}</version>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
-    <dependency>
-      <groupId>org.endeavourhealth.common</groupId>
-      <artifactId>api</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>me.fhir</groupId> <!-- Exclude dstu2 as it conflicts with dstu3 -->
-          <artifactId>fhir-dstu2</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+
     <dependency>
       <groupId>javax.ws.rs</groupId>
       <artifactId>javax.ws.rs-api</artifactId>
@@ -62,16 +74,7 @@
       <groupId>org.glassfish.jersey.containers</groupId>
       <artifactId>jersey-container-servlet</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.keycloak</groupId>
-      <artifactId>keycloak-core</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.keycloak</groupId>
-      <artifactId>keycloak-common</artifactId>
-      <scope>provided</scope>
-    </dependency>
+
     <dependency>
       <groupId>javax.activation</groupId>
       <artifactId>activation</artifactId>
@@ -121,10 +124,10 @@
       <groupId>org.openpseudonymiser</groupId>
       <artifactId>cryptolib</artifactId>
     </dependency>
+
   </dependencies>
 
   <build>
-    <finalName>api</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -135,6 +138,28 @@
           <target>${java.version}</target>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>${maven-dependency-plugin.version}</version>
+      </plugin>
     </plugins>
   </build>
+
+  <repositories>
+    <repository>
+      <snapshots/>
+      <id>snapshots</id>
+      <name>libs-snapshot</name>
+      <url>https://maven.discoverydataservice.net/artifactory/libs-snapshot</url>
+    </repository>
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>central</id>
+      <name>libs-release</name>
+      <url>https://maven.discoverydataservice.net/artifactory/libs-release</url>
+    </repository>
+  </repositories>
 </project>
