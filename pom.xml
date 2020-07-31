@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.endeavourhealth.getFHIRRecordAPI</groupId>
+  <artifactId>getFHIRRecordAPI</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <properties>
+    <java.version>1.8</java.version>
+    <maven-compiler-plugin.version>3.1</maven-compiler-plugin.version>
+    <maven-dependency-plugin.version>3.1.1</maven-dependency-plugin.version>
+    <maven-deploy-plugin.version>2.4</maven-deploy-plugin.version>
+    <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
+    <maven-surefire-plugin.version>2.12.4</maven-surefire-plugin.version>
+    <maven-sonar-plugin.version>3.5.0.1254</maven-sonar-plugin.version>
+    <frontend-maven-plugin.version>1.4</frontend-maven-plugin.version>
+    <node.version>v12.2.0</node.version>
+
+    <sonar.projectKey>endeavourhealth-discovery_getFHIRRecordAPI</sonar.projectKey>
+    <sonar.organization>endeavourhealth-discovery</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+    <sonar.login>8ddba9bbb23a08a7cff43ecc620be3738a152b65</sonar.login>
+    <sonar.typescript.node>frontend/node/node</sonar.typescript.node>
+    <sonar.coverage.exclusions>**/api/**/*, **/dal/**/*, **/models/**/*</sonar.coverage.exclusions>
+    <sonar.junit.reportPaths>target/surefire-reports</sonar.junit.reportPaths>
+  </properties>
+
+  <modules>
+    <module>API</module>
+    <module>common</module>
+  </modules>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.endeavourhealth</groupId>
+        <artifactId>discovery-versions</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>${maven-deploy-plugin.version}</version>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>${maven-release-plugin.version}</version>
+        <configuration>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>${maven-dependency-plugin.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <version>${maven-sonar-plugin.version}</version>
+      </plugin>
+    </plugins>
+  </build>
+
+  <repositories>
+    <repository>
+      <snapshots/>
+      <id>snapshots</id>
+      <name>libs-snapshot</name>
+      <url>https://maven.discoverydataservice.net/artifactory/libs-snapshot</url>
+    </repository>
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>central</id>
+      <name>libs-release</name>
+      <url>https://maven.discoverydataservice.net/artifactory/libs-release</url>
+    </repository>
+  </repositories>
+</project>

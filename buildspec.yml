@@ -1,0 +1,25 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: openjdk8
+  pre_build:
+    commands:
+      - IP=$(curl http://checkip.amazonaws.com)/32
+      - echo $IP of CodeBuild Instance
+  build:
+    commands:
+      - echo Build started on `date`
+      - chmod +x aws_scripts/build.sh
+      - aws_scripts/build.sh mvn -B package
+  post_build:
+    commands:
+      - IP=$(curl http://checkip.amazonaws.com)/32
+      - echo $IP of CodeBuild Instance
+      - echo Build completed on `date`
+artifacts:
+  files:
+    - appspec.yml
+    - aws_scripts/**/*
+    - API/target/api/**/*

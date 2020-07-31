@@ -1,0 +1,10 @@
+version: 0.0
+os: linux
+files:
+  - source: /API/target/api
+    destination: //opt/tomcat/webapps/fhir-record-api
+hooks:
+  BeforeInstall:
+    - location: aws_scripts/cleanup
+      timeout: 300
+      runas: root
