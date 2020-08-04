@@ -10,13 +10,17 @@
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
             <param-name>jersey.config.server.provider.packages</param-name>
-            <param-value>org.endeavourhealth.coreui.endpoints,org.endeavourhealth.getFHIRRecordAPI.api.endpoints</param-value>
+            <param-value>io.swagger.jaxrs.listing,org.endeavourhealth.coreui.endpoints,
+                org.endeavourhealth.endpoints,
+                org.endeavourhealth.uiaudit.endpoints
+            </param-value>
         </init-param>
         <init-param>
             <param-name>jersey.config.server.provider.classnames</param-name>
             <param-value>org.glassfish.jersey.jackson.JacksonFeature,
-                org.endeavourhealth.common.security.CustomRolesAllowedFeature,
-                org.endeavourhealth.getFHIRRecordAPI.api.framework.exceptions.BaseExceptionMapper
+                io.swagger.jaxrs.listing.ApiListingResource,
+                io.swagger.jaxrs.listing.SwaggerSerializers,
+                org.endeavourhealth.common.security.CustomRolesAllowedFeature
             </param-value>
         </init-param>
 
@@ -34,7 +38,7 @@
         <url-pattern>/api/*</url-pattern>
     </servlet-mapping>
 
-    <!-- ===== PUBLIC ENDPOINTS SERVLET ===== -->
+    <!-- public resources, no auth needed -->
     <servlet>
         <servlet-name>Public Resources</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
@@ -56,16 +60,45 @@
         <url-pattern>/public/*</url-pattern>
     </servlet-mapping>
 
+
     <!-- ===== STARTUP ===== -->
     <context-param>
         <param-name>app_id</param-name>
         <param-value>fhir-record-api</param-value>
     </context-param>
-    <listener>
-        <listener-class>
-            org.endeavourhealth.coreui.framework.StartupConfig
-        </listener-class>
-    </listener>
+    <filter>
+        <filter-name>ExternalApiAccessFilter</filter-name>
+        <filter-class>org.endeavourhealth.coreui.framework.ExternalAPIAccessFilter</filter-class>
+        <init-param>
+            <param-name>app_name</param-name>
+            <param-value>fhir-record-api</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>ExternalApiAccessFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>CorsFilter</filter-name>
+        <filter-class>org.endeavourhealth.coreui.framework.CORSFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CorsFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    <filter>
+        <filter-name>instrumentedFilter</filter-name>
+        <filter-class>com.codahale.metrics.servlet.InstrumentedFilter</filter-class>
+        <init-param>
+            <param-name>name-prefix</param-name>
+            <param-value>EDS-UI</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>instrumentedFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
     <!-- ============================================ -->
     <!-- JEE security settings - Keycloak integration -->
@@ -83,16 +116,16 @@
             <web-resource-name>api</web-resource-name>
             <url-pattern>/api/*</url-pattern>
         </web-resource-collection>
-        <auth-constraint>
-            <role-name>eds_user</role-name>
-        </auth-constraint>
+        <!--  <auth-constraint>
+              <role-name>eds_user</role-name>
+          </auth-constraint> -->
     </security-constraint>
 
     <!-- use Keycloak authentication valve installed in the container -->
-    <login-config>
+    <!--<login-config>
         <auth-method>KEYCLOAK</auth-method>
         <realm-name>Endeavour</realm-name>
-    </login-config>
+    </login-config> -->
 
     <!-- all roles in the system MUST be specified here -->
     <security-role>
@@ -108,13 +141,4 @@
         <tracking-mode>COOKIE</tracking-mode>
     </session-config>
 
-    <!-- ===== CORS FILTERING ===== -->
-    <filter>
-        <filter-name>CorsFilter</filter-name>
-        <filter-class>org.endeavourhealth.coreui.framework.CORSFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>CorsFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
 </web-app>
