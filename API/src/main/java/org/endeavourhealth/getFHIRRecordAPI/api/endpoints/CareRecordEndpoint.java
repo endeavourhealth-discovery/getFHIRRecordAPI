@@ -27,7 +27,7 @@ public class CareRecordEndpoint {
     public Response getFhir(@Context SecurityContext sc,
                                @QueryParam("patientId") Integer patientId
     ) throws Exception {
-        LOG.debug("getFhir");
+        LOG.debug("getFhir PPPPPPPPPPPPPPPPPPPPP" +patientId);
 
         FhirApi api = getFhirApi();
         JSONObject json = api.getFhirBundle(patientId,"0", "0");
