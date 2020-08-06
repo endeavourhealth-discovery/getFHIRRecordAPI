@@ -112,6 +112,7 @@ public class FhirApi {
 
         PatientFull patient = null;
 
+
         if (id>0 || !dateOfBirth.equals("0"))
             patient = viewerDAL.getPatientFull(id, nhsNumber, dateOfBirth, activePatientsOnly);
         else

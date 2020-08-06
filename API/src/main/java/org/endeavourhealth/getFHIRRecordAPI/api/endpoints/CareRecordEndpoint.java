@@ -16,21 +16,23 @@ import java.util.*;
 
 import static javax.ws.rs.client.Entity.form;
 
-@Path("events")
+@Path("patient")
 public class CareRecordEndpoint {
     private static final Logger LOG = LoggerFactory.getLogger(CareRecordEndpoint.class);
 
     @GET
-    @Path("/fhir")
+    @Path("/$getstructuredrecord")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFhir(@Context SecurityContext sc,
                                @QueryParam("patientId") Integer patientId
     ) throws Exception {
-        LOG.debug("getFhir PPPPPPPPPPPPPPPPPPPPP" +patientId);
+
 
         FhirApi api = getFhirApi();
+
         JSONObject json = api.getFhirBundle(patientId,"0", "0");
+
         return Response
                 .ok()
                 .entity(json)
@@ -43,7 +45,7 @@ public class CareRecordEndpoint {
 
 
     @POST
-    @Path("/fhir")
+    @Path("/$getstructuredrecord")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postFhir(@Context HttpServletRequest httpServletRequest) throws Exception {
@@ -55,6 +57,8 @@ public class CareRecordEndpoint {
         Request requestModel = new Request();
         requestModel.setParams(p);
         requestModel.setHttpMethod("POST");
+
+
         FhirApi api = new FhirApi();
         JSONObject result = (JSONObject) api.handleRequest(requestModel);
         return Response
