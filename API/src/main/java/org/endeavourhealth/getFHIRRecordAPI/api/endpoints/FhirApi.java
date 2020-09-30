@@ -112,81 +112,88 @@ public class FhirApi {
 
         PatientFull patient = null;
 
+       try {
+           if (id > 0 || !dateOfBirth.equals("0"))
+               patient = viewerDAL.getPatientFull(id, nhsNumber, dateOfBirth, activePatientsOnly);
+           else
+               patient = viewerDAL.getPatientFull(nhsNumber, activePatientsOnly);
 
-        if (id>0 || !dateOfBirth.equals("0"))
-            patient = viewerDAL.getPatientFull(id, nhsNumber, dateOfBirth, activePatientsOnly);
-        else
-            patient = viewerDAL.getPatientFull(nhsNumber, activePatientsOnly);
+           if (patient == null)
+               throw new ResourceNotFoundException("Patient resource with id = '" + nhsNumber + "' not found");
+           patientResource = Patient.getPatientResource(patient, viewerDAL);
 
-        if (patient == null)
-            throw new ResourceNotFoundException("Patient resource with id = '" + nhsNumber + "' not found");
-        patientResource = Patient.getPatientResource(patient, viewerDAL);
+           bundle = new Bundle();
+           bundle.setType(Bundle.BundleType.COLLECTION);
+           Meta meta = new Meta();
+           meta.addProfile("https://fhir.hl7.org.uk/STU3/StructureDefinition/CareConnect-StructuredRecord-Bundle-1");
+           bundle.setMeta(meta);
 
-        bundle = new Bundle();
-        bundle.setType(Bundle.BundleType.COLLECTION);
-        Meta meta = new Meta();
-        meta.addProfile("https://fhir.hl7.org.uk/STU3/StructureDefinition/CareConnect-StructuredRecord-Bundle-1");
-        bundle.setMeta(meta);
+           if (patient.getOrglocation().trim().length() > 0) {
+               patientResource.setManagingOrganization(new Reference(getOrganizationFhirObj(Integer.parseInt(patient.getOrglocation()))));
+           }
+           if (patient.getPractitionerId() != 0) {
+               patientResource.setGeneralPractitioner(Arrays.asList(new Reference(getPractitionerResource(patient.getPractitionerId()))));
+           }
+           bundle.addEntry().setResource(patientResource);
 
-        if (patient.getOrglocation().trim().length() > 0) {
-            patientResource.setManagingOrganization(new Reference(getOrganizationFhirObj(Integer.parseInt(patient.getOrglocation()))));
-        }
-        if (patient.getPractitionerId() != 0) {
-            patientResource.setGeneralPractitioner(Arrays.asList(new Reference(getPractitionerResource(patient.getPractitionerId()))));
-        }
-        bundle.addEntry().setResource(patientResource);
+           if (onlyDemographics) {
+               return parseBundle();
+           }
 
-        if(onlyDemographics) {
-            return parseBundle();
-        }
+           Long patientId = Long.parseLong(patient.getId());
+           Map<Long, String> patientMap;
+           List<Long> patientIds = null;
+           if (!nhsNumber.equals("0")) {
+               patientMap = viewerDAL.getPatientIds(nhsNumber, 0L);
+               patientIds = patientMap.keySet().stream()
+                       .collect(Collectors.toList());
+           } else {
+               patientMap = viewerDAL.getPatientIds(nhsNumber, patientId);
+               patientIds = Arrays.asList(patientId);
+           }
+           setCoding(patientMap);
 
-        Long patientId = Long.parseLong(patient.getId());
-        Map<Long, String> patientMap;
-        List<Long> patientIds = null;
-        if (!nhsNumber.equals("0")) {
-            patientMap = viewerDAL.getPatientIds(nhsNumber, 0L);
-            patientIds =  patientMap.keySet().stream()
-                    .collect(Collectors.toList());
-        } else {
-            patientMap = viewerDAL.getPatientIds(nhsNumber, patientId);
-            patientIds = Arrays.asList(patientId);
-        }
-        setCoding(patientMap);
+           addFhirAllergiesToBundle(patientIds);
 
-        addFhirAllergiesToBundle(patientIds);
+           // Adding MedicationStatement, MedicationRequest, Medication & MedicationStatementList to bundle
+           addFhirMedicationStatementToBundle(patientIds);
 
-        // Adding MedicationStatement, MedicationRequest, Medication & MedicationStatementList to bundle
-        addFhirMedicationStatementToBundle(patientIds);
+           addFhirAppointmentToBundle(patientIds);
 
-        addFhirAppointmentToBundle(patientIds);
+           addFhirFamilyMemberHistoryToBundle(patientIds);
 
-        addFhirFamilyMemberHistoryToBundle(patientIds);
+           addFhirConditionsToBundle(patientIds);
 
-        addFhirConditionsToBundle(patientIds);
+           addEpisodeOfCareToBundle(patientIds);
 
-        addEpisodeOfCareToBundle(patientIds);
+           addFhirEncountersToBundle(patientIds);
 
-        addFhirEncountersToBundle(patientIds);
+           addObservationToBundle(patientIds);
 
-        addObservationToBundle(patientIds);
+           addProcedureToBundle(patientIds);
 
-        addProcedureToBundle(patientIds);
+           addLocationToBundle(patient.getOrglocation());
 
-        addLocationToBundle(patient.getOrglocation());
+           addFhirImmunizationsToBundle(patientIds);
 
-        addFhirImmunizationsToBundle(patientIds);
+           addFhirReferralRequestsToBundle(patientIds);
 
-        addFhirReferralRequestsToBundle(patientIds);
+           addToBundle("organizations");
 
-        addToBundle("organizations");
-
-        if (!practitionerAndRoleResource.isEmpty()) {
-            for (Map.Entry entry : practitionerAndRoleResource.entrySet()) {
-                List<Resource> resourceList = (List) entry.getValue();
-                resourceList.forEach(resource -> bundle.addEntry().setResource(resource));
-            }
-        }
-
+           if (!practitionerAndRoleResource.isEmpty()) {
+               for (Map.Entry entry : practitionerAndRoleResource.entrySet()) {
+                   List<Resource> resourceList = (List) entry.getValue();
+                   resourceList.forEach(resource -> bundle.addEntry().setResource(resource));
+               }
+           }
+       }
+       finally {
+           /* we should call close method to release the connection*/
+           if(null !=viewerDAL)
+           {
+               viewerDAL.close();
+           }
+       }
         return parseBundle();
     }
 
