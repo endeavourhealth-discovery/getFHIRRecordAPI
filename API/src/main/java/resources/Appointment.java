@@ -37,7 +37,7 @@ public class Appointment {
 		appointment.setMinutesDuration(actualDuration);
 		appointment.setCreated(startDt);
 		if(appointmentResult.getStatus()!=null)
-		appointment.setStatus(new org.hl7.fhir.dstu3.model.Appointment.AppointmentStatusEnumFactory().fromCode(appointmentResult.getStatus().toLowerCase ()));
+		appointment.setStatus(new org.hl7.fhir.dstu3.model.Appointment.AppointmentStatusEnumFactory().fromCode(appointmentResult.getStatus().toLowerCase().replaceAll(" ", "")));
 
 		Coding coding1 = new Coding();
 		/*coding1.setSystem("");*/
