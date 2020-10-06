@@ -1,12 +1,14 @@
 package resources;
 
 import org.endeavourhealth.getFHIRRecordAPI.common.constants.ResourceConstants;
+import org.endeavourhealth.getFHIRRecordAPI.common.dal.JDBCDAL;
 import org.endeavourhealth.getFHIRRecordAPI.common.models.ObservationFull;
 import org.hl7.fhir.dstu3.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.UUID;
 
 import static org.endeavourhealth.getFHIRRecordAPI.common.constants.ResourceConstants.*;
@@ -14,12 +16,14 @@ import static org.endeavourhealth.getFHIRRecordAPI.common.constants.ResourceCons
 public class Observation {
     private static final Logger LOG = LoggerFactory.getLogger(Observation.class);
     private ObservationFull observationFull;
+    private JDBCDAL jdbcdal;
 
-    public Observation(ObservationFull observationFull) {
+    public Observation(ObservationFull observationFull, JDBCDAL jdbcdal) {
         this.observationFull = observationFull;
+        this.jdbcdal = jdbcdal;
     }
 
-    public org.hl7.fhir.dstu3.model.Observation getObservationResource() {
+    public org.hl7.fhir.dstu3.model.Observation getObservationResource() throws Exception{
         org.hl7.fhir.dstu3.model.Observation observation = new org.hl7.fhir.dstu3.model.Observation();
 
         observation.setStatus(org.hl7.fhir.dstu3.model.Observation.ObservationStatus.FINAL);
@@ -28,6 +32,12 @@ public class Observation {
         observation.addIdentifier()
                 .setValue(String.valueOf(observationFull.getId()))
                 .setSystem(ResourceConstants.SYSTEM_ID);
+        String json = jdbcdal.getJsonValueFromObservationAdditional(observationFull.getPatientId());
+        if(json != null) {
+            org.hl7.fhir.dstu3.model.Observation.ObservationReferenceRangeComponent observationReferenceRangeComponent = new org.hl7.fhir.dstu3.model.Observation.ObservationReferenceRangeComponent();
+            observationReferenceRangeComponent.addChild(json);
+            observation.setReferenceRange(Arrays.asList(observationReferenceRangeComponent));
+        }
 
         UUID uuid = UUID.randomUUID();
         observation.setId(String.valueOf(uuid));

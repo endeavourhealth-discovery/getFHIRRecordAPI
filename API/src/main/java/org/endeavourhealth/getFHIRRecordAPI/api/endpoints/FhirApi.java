@@ -241,7 +241,7 @@ public class FhirApi {
             fihrConditionListObj.setSubject(new Reference(patientResource));
 
             for (ConditionFull conditionFull : conditions) {
-                org.hl7.fhir.dstu3.model.Condition conditionFhirObj = Condition.getConditionResource(conditionFull);
+                org.hl7.fhir.dstu3.model.Condition conditionFhirObj = Condition.getConditionResource(conditionFull, viewerDAL);
                 conditionFhirObj.getMeta().addTag(patientCodingMap.get(conditionFull.getPatientId()));
                 fihrConditionListObj.addEntry().setItem(new Reference(conditionFhirObj));
                 conditionFhirObj.setSubject(new Reference(patientResource));
@@ -339,7 +339,7 @@ public class FhirApi {
             observationListResource.setSubject(new Reference(patientResource));
             if (!observationFullList.isEmpty()) {
                 for (ObservationFull observationFull : observationFullList) {
-                    Observation observationFhir = new Observation(observationFull);
+                    Observation observationFhir = new Observation(observationFull, viewerDAL);
                     org.hl7.fhir.dstu3.model.Observation observationResource = observationFhir.getObservationResource();
                     observationResource.getMeta().addTag(patientCodingMap.get((observationFull.getPatientId())));
                     observationResource.setPerformer(Arrays.asList(new Reference(getPractitionerRoleResource(new Long(observationFull.getPractitionerId()), observationFull.getOrganizationId(),viewerDAL))));

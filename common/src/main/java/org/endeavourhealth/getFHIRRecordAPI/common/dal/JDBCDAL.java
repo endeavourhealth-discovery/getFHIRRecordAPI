@@ -179,6 +179,39 @@ public class JDBCDAL extends BaseJDBCDAL {
         return episodeOfCareFull;
     }
 
+    public String getDescriptionFromObservation(Long id) throws Exception{
+        String description = null;
+        String sql = "select valueConcept.description as description from observation o " +
+                "join observation_additional oa on oa.id = o.id " +
+                "join concept propConcept on propConcept.dbid = oa.property_id " +
+                "join concept valueConcept on valueConcept.dbid = oa.value_id " +
+                "where propConcept.id = 'CM_ProblemSignificance' and patient_id=" + id;
+        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next())
+                    description = String.valueOf(resultSet);
+            }
+        }
+        return description;
+    }
+
+
+    public String getJsonValueFromObservationAdditional(Long id) throws Exception{
+        String jsonString = null;
+        String sql = "select oa.json_value, o.* from observation o " +
+                "join observation_additional oa on oa.id = o.id " +
+                "join concept propConcept on propConcept.dbid = oa.property_id " +
+                "where propConcept.id = 'CM_ResultReferenceRange' and patient_id=" + id;
+        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next())
+                    jsonString = String.valueOf(resultSet);
+            }
+        }
+        return jsonString;
+    }
+
+
     public List<ObservationFull> getObservationFullList(List<Long> id) throws Exception {
         List<ObservationFull> observationFullList = new ArrayList<>();
 
