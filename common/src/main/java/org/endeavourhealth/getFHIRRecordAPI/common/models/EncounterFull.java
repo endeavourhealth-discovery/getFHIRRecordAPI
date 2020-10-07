@@ -99,7 +99,7 @@ public class EncounterFull {
     private String date;
     private String endDate;
     private String episode_of_care_id;
-    private long practitionerId;
+    private long practitionerId=-1;
     private long organizationId;
 
 }
