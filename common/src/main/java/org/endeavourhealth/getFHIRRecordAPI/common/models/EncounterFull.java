@@ -68,12 +68,28 @@ public class EncounterFull {
         return episode_of_care_id;
     }
 
+    public long getPractitionerId() {
+        return practitionerId;
+    }
+
+    public EncounterFull setPractitionerId(long practitionerId) {
+        this.practitionerId = practitionerId;
+        return this;
+    }
+
     public EncounterFull setEpisode_of_care_id(String episode_of_care_id) {
         this.episode_of_care_id = episode_of_care_id;
         return this;
     }
 
+    public long getOrganizationId() {
+        return organizationId;
+    }
 
+    public EncounterFull setOrganizationId(long organizationId) {
+        this.organizationId = organizationId;
+        return this;
+    }
 
     private String status;
     private String name;
@@ -83,5 +99,7 @@ public class EncounterFull {
     private String date;
     private String endDate;
     private String episode_of_care_id;
+    private long practitionerId;
+    private long organizationId;
 
 }

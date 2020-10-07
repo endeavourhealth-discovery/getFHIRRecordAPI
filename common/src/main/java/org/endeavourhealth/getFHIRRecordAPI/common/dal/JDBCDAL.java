@@ -603,7 +603,7 @@ public class JDBCDAL extends BaseJDBCDAL {
 
     public List<EncounterFull> getEncounterFullList(List<Long> patientIds, Long encounterId, boolean isPatient) throws Exception {
         ArrayList<EncounterFull> encounterFullList =null;
-        String sql = " SELECT  e.patient_id as patientId, e.clinical_effective_date as date, e.episode_of_care_id as episode_of_care_id, e.end_date as endDate, e.id,coalesce(c.name,'') as name ,coalesce(c.code,'') as code,  CASE WHEN e.end_date IS NULL THEN 'Active' ELSE 'Past' END as status " +
+        String sql = " SELECT  e.patient_id as patientId, e.practitioner_id as practitioner_id,e.organization_id as organization_id,e.clinical_effective_date as date, e.episode_of_care_id as episode_of_care_id, e.end_date as endDate, e.id,coalesce(c.name,'') as name ,coalesce(c.code,'') as code,  CASE WHEN e.end_date IS NULL THEN 'Active' ELSE 'Past' END as status " +
                      " FROM encounter e LEFT JOIN concept c on c.dbid = e.non_core_concept_id ";
         String where_clause="";
         if (isPatient) {
@@ -629,6 +629,8 @@ public class JDBCDAL extends BaseJDBCDAL {
                 EncounterFull encounterFull = new EncounterFull();
                 encounterFull
                         .setPatientId(resultSet.getLong("patientId"))
+                        .setPractitionerId(resultSet.getLong("practitioner_id"))
+                        .setOrganizationId(resultSet.getLong("organization_id"))
                         .setDate(resultSet.getString("date"))
                         .setEndDate(resultSet.getString("endDate"))
                         .setName(resultSet.getString("name"))

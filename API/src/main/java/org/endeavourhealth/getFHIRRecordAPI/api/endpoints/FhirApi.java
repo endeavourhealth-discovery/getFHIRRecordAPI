@@ -457,6 +457,8 @@ public class FhirApi {
                 encounterObj.getMeta().addTag(patientCodingMap.get((encounterFull.getPatientId())));
                 encounterObj.setSubject(new Reference(patientResource));
                 encounterObj.setEpisodeOfCare(getEpisodeOfCareReference(encounterFull.getEpisode_of_care_id()));
+                encounterObj.setServiceProvider(new Reference(getPractitionerRoleResource(encounterFull.getPractitionerId(), encounterFull.getOrganizationId(),viewerDAL)));
+
                 Long encounterID=new Long(encounterFull.getEncounterid());
                 if (!encounterFhirMap.containsKey(encounterID)) {
                     encounterFhirMap.put(encounterID, encounterObj);
