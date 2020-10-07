@@ -25,7 +25,7 @@ public class Condition {
                 .setValue(String.valueOf(conditionfull.getId()))
                 .setSystem(ResourceConstants.SYSTEM_ID);
 
-        String description = jdbcdal.getDescriptionFromObservation(conditionfull.getPatientId());
+        String description = jdbcdal.getDescriptionFromObservation(conditionfull.getId());
         if(description != null) {
             CodeableConcept problemSignificanceCode = new CodeableConcept();
             problemSignificanceCode.addCoding()

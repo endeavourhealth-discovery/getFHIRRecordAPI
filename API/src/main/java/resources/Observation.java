@@ -1,5 +1,9 @@
 package resources;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.endeavourhealth.getFHIRRecordAPI.common.constants.ResourceConstants;
 import org.endeavourhealth.getFHIRRecordAPI.common.dal.JDBCDAL;
 import org.endeavourhealth.getFHIRRecordAPI.common.models.ObservationFull;
@@ -9,6 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 import static org.endeavourhealth.getFHIRRecordAPI.common.constants.ResourceConstants.*;
@@ -32,11 +38,40 @@ public class Observation {
         observation.addIdentifier()
                 .setValue(String.valueOf(observationFull.getId()))
                 .setSystem(ResourceConstants.SYSTEM_ID);
-        String json = jdbcdal.getJsonValueFromObservationAdditional(observationFull.getPatientId());
+        String json = jdbcdal.getJsonValueFromObservationAdditional(observationFull.getId());
         if(json != null) {
+            JSONParser parser = new JSONParser();
+            JSONArray jsonArray= (JSONArray)parser.parse(json);
+            Iterator<JSONObject> iterator = jsonArray.iterator();
             org.hl7.fhir.dstu3.model.Observation.ObservationReferenceRangeComponent observationReferenceRangeComponent = new org.hl7.fhir.dstu3.model.Observation.ObservationReferenceRangeComponent();
-            observationReferenceRangeComponent.addChild(json);
-            observation.setReferenceRange(Arrays.asList(observationReferenceRangeComponent));
+
+            while(iterator.hasNext()) {
+                JSONObject json1=(JSONObject)iterator.next();
+                JSONObject rangeJson= (JSONObject)  json1.get("low");
+                if(null!=rangeJson)
+                {
+                    SimpleQuantity simpleQuantity = (SimpleQuantity) observationReferenceRangeComponent.addChild("low");
+
+                    simpleQuantity.setValue(new java.math.BigDecimal(rangeJson.get("value").toString()));
+                    simpleQuantity.setComparator(Quantity.QuantityComparator.fromCode(rangeJson.get("comparator").toString()));
+                    simpleQuantity.setUnit(rangeJson.get("unit").toString());
+                }
+                 rangeJson= (JSONObject)  json1.get("high");
+                if(null!=rangeJson)
+                {
+                    SimpleQuantity simpleQuantity = (SimpleQuantity) observationReferenceRangeComponent.addChild("high");
+
+                    simpleQuantity.setValue(new java.math.BigDecimal(rangeJson.get("value").toString()));
+                    simpleQuantity.setComparator(Quantity.QuantityComparator.fromCode(rangeJson.get("comparator").toString()));
+                    simpleQuantity.setUnit(rangeJson.get("unit").toString());
+                }
+
+
+            }
+
+            List<org.hl7.fhir.dstu3.model.Observation.ObservationReferenceRangeComponent> alist= observation.getReferenceRange();
+            alist.add(observationReferenceRangeComponent);
+            observation.setReferenceRange(alist);
         }
 
         UUID uuid = UUID.randomUUID();

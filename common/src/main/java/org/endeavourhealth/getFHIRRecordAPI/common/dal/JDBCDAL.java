@@ -181,15 +181,14 @@ public class JDBCDAL extends BaseJDBCDAL {
 
     public String getDescriptionFromObservation(Long id) throws Exception{
         String description = null;
-        String sql = "select valueConcept.description as description from observation o " +
-                "join observation_additional oa on oa.id = o.id " +
-                "join concept propConcept on propConcept.dbid = oa.property_id " +
+        String sql = "select valueConcept.description as description from observation_additional oa " +
+               " join concept propConcept on propConcept.dbid = oa.property_id " +
                 "join concept valueConcept on valueConcept.dbid = oa.value_id " +
-                "where propConcept.id = 'CM_ProblemSignificance' and patient_id=" + id;
+                "where propConcept.id = 'CM_ProblemSignificance' and oa.id=" + id;
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next())
-                    description = String.valueOf(resultSet);
+                    description = String.valueOf(resultSet.getString("description"));
             }
         }
         return description;
@@ -198,14 +197,14 @@ public class JDBCDAL extends BaseJDBCDAL {
 
     public String getJsonValueFromObservationAdditional(Long id) throws Exception{
         String jsonString = null;
-        String sql = "select oa.json_value, o.* from observation o " +
-                "join observation_additional oa on oa.id = o.id " +
-                "join concept propConcept on propConcept.dbid = oa.property_id " +
-                "where propConcept.id = 'CM_ResultReferenceRange' and patient_id=" + id;
+        String sql = "select oa.json_value from observation_additional oa " +
+                " join concept propConcept on propConcept.dbid = oa.property_id " +
+                " where propConcept.id = 'CM_ResultReferenceRange' and oa.id=" + id;
+
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next())
-                    jsonString = String.valueOf(resultSet);
+                    jsonString = String.valueOf(resultSet.getString("json_value"));
             }
         }
         return jsonString;
