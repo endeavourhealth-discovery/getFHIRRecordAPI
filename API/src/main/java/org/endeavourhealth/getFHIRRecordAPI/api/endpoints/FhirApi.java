@@ -470,7 +470,7 @@ public class FhirApi {
                             .setSystem("http://hl7.org/fhir/ValueSet/encounter-participant-type");
                     coding.add(code);
                    epc.setType(coding);
-                   epc.setIndividual(new Reference(getPractitionerResource(encounterFull.getPractitionerId(),viewerDAL)));
+                   epc.setIndividual(new Reference(getPractitionerRoleResource(encounterFull.getPractitionerId(), encounterFull.getOrganizationId(),viewerDAL)));
                    encounterObj.getParticipant().add(epc);
 
                 }

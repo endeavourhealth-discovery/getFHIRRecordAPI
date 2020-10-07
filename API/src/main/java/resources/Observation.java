@@ -38,6 +38,19 @@ public class Observation {
         observation.addIdentifier()
                 .setValue(String.valueOf(observationFull.getId()))
                 .setSystem(ResourceConstants.SYSTEM_ID);
+
+        String description = jdbcdal.getDescriptionFromObservation(observationFull.getId());
+        if(description != null) {
+            CodeableConcept problemSignificanceCode = new CodeableConcept();
+            problemSignificanceCode.addCoding()
+                    .setDisplay(description)
+                    .setSystem("http://endeavourhealth.org/fhir/ValueSet/primarycare-problem-significance");
+
+            observation.addExtension()
+                    .setUrl("http://endeavourhealth.org/fhir/StructureDefinition/primarycare-problem-significance-extension")
+                    .setValue(problemSignificanceCode);
+
+        }
         String json = jdbcdal.getJsonValueFromObservationAdditional(observationFull.getId());
         if(json != null) {
             JSONParser parser = new JSONParser();
