@@ -424,6 +424,28 @@ public class JDBCDAL extends BaseJDBCDAL {
         return allergiesFullList;
     }
 
+    public List<AllergyFull> getAllergyFullListFromObservation(List<Long> patientids) throws Exception {
+
+        ArrayList<AllergyFull> allergiesFullList =null;
+        try {
+        String sql = "select o.id as id, o.patient_id as patientId, o.clinical_effective_date as date, c.name ,c.code,o.organization_id,o.practitioner_id from observation o " +
+                "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
+                "join concept c on c.dbid = o.non_core_concept_id " +
+                "where ccv.code_category_id in (2,3) and o.patient_id in  (" + StringUtils.join(patientids, ',') + ")";
+
+        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                allergiesFullList = getAllergyFullList(resultSet);
+            }
+        }
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
+           e.printStackTrace();
+        }
+        return allergiesFullList;
+    }
+
     public OrganizationFull getOrganizationFull(long organizationId) throws Exception {
 
         String sql = "select id as id," +

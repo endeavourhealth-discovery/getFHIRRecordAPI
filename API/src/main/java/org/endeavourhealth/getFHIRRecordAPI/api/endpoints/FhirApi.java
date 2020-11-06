@@ -35,6 +35,7 @@ import resources.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FhirApi {
     private static final Logger LOG = LoggerFactory.getLogger(FhirApi.class);
@@ -308,7 +309,8 @@ public class FhirApi {
     author :pp141
     */
     private void addFhirAllergiesToBundle(List<Long> patientIds ,JDBCDAL viewerDAL) throws Exception {
-        List<AllergyFull> allergies = viewerDAL.getAllergyFullList(patientIds);
+        List<AllergyFull> allergies = Stream.concat(viewerDAL.getAllergyFullList(patientIds).stream(), viewerDAL.getAllergyFullListFromObservation(patientIds).stream())
+                .collect(Collectors.toList());
 
         if (allergies.size() > 0) {
 
