@@ -425,9 +425,7 @@ public class JDBCDAL extends BaseJDBCDAL {
     }
 
     public List<AllergyFull> getAllergyFullListFromObservation(List<Long> patientids) throws Exception {
-
         ArrayList<AllergyFull> allergiesFullList =null;
-        try {
         String sql = "select o.id as id, o.patient_id as patientId, o.clinical_effective_date as date, c.name ,c.code,o.organization_id,o.practitioner_id from observation o " +
                 "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
                 "join concept c on c.dbid = o.non_core_concept_id " +
@@ -437,11 +435,6 @@ public class JDBCDAL extends BaseJDBCDAL {
             try (ResultSet resultSet = statement.executeQuery()) {
                 allergiesFullList = getAllergyFullList(resultSet);
             }
-        }
-        }
-        catch (Exception e){
-            System.out.println(e.getMessage());
-           e.printStackTrace();
         }
         return allergiesFullList;
     }
@@ -591,15 +584,15 @@ public class JDBCDAL extends BaseJDBCDAL {
 
     public List<ConditionFull>  getConditionFullList(List<Long> patientIds) throws Exception {
         ArrayList<ConditionFull> conditionFullList =null;
-        String sql = " SELECT a.id as id, a.patient_id as patientId, a.clinical_effective_date as date,IF(ISNULL(a.problem_end_date), 'active', 'resolved') AS ClinicalStatus," +
-                " c.name ,c.code " +
-                " FROM observation a join concept c on c.dbid = a.non_core_concept_id where a.is_problem=1 and patient_id in (" + StringUtils.join(patientIds, ',') + ")";
+        String sql = " SELECT a.id as id, a.patient_id as patientId, a.clinical_effective_date as date,IF(ISNULL(a.problem_end_date), 'active', 'resolved') \n" +
+                "AS ClinicalStatus, c.name ,c.code \n" +
+                "FROM observation a join concept c on c.dbid = a.non_core_concept_id " +
+                "join code_category_values ccv on ccv.concept_dbid = a.non_core_concept_id " +
+                "where (a.is_problem=1 or ccv.code_category_id in (8)) and patient_id in (" + StringUtils.join(patientIds, ',') + ")";
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
-
                 conditionFullList= getConditionFullList(resultSet);
             }
-
         }
         return conditionFullList;
     }
