@@ -227,7 +227,9 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "coalesce(c.description, '') as description," +
                 "coalesce(o.result_value_units,'') as resultValueUnits from observation o " +
                 "join concept c on o.non_core_concept_id = c.dbid " +
-                "where o.patient_id in (" + StringUtils.join(id, ',') + ") " + "and c.name not like '%family history%' and c.name not like '%FH:%' and c.name not like '%immunisation%' and c.name not like '%procedure%'" +
+                "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
+                "where ccv.code_category_id not in (8,2,3,13,28,33,34,38) " +
+                "and o.patient_id in (" + StringUtils.join(id, ',') + ") " + "and c.name not like '%family history%' and c.name not like '%FH:%' and c.name not like '%immunisation%' and c.name not like '%procedure%'" +
                 " and c.name not like '%vaccination%' and o.is_problem = 0";
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
