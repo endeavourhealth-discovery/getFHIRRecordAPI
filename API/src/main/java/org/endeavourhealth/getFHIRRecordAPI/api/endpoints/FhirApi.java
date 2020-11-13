@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import resources.AllergyIntolerance;
 import resources.Appointment;
 import resources.Condition;
+import resources.DiagnosticReport;
 import resources.Encounter;
 import resources.EpisodeOfCare;
 import resources.FamilyMemberHistory;
@@ -171,6 +172,7 @@ public class FhirApi {
             addFhirEncountersToBundle(patientIds,viewerDAL);
 
             addObservationToBundle(patientIds,viewerDAL);
+           // addDiagnosticReportToBundle(patientIds,viewerDAL);
 
             addProcedureToBundle(patientIds,viewerDAL);
 
@@ -348,6 +350,31 @@ public class FhirApi {
                     observationResource.setSubject(new Reference(patientResource));
                     if(observationFull.getEncounterId() != 0) {
                         observationResource.setContext(new Reference(getEncounterFhirObj(observationFull.getEncounterId(),viewerDAL)));
+                    }
+                    bundle.addEntry().setResource(observationResource);
+                    observationListResource.addEntry().setItem(new Reference(observationResource));
+                }
+            }
+            bundle.addEntry().setResource(observationListResource);
+        }
+    }
+
+    private void addDiagnosticReportToBundle(List<Long> patientIds,JDBCDAL viewerDAL) throws Exception {
+        // Observation resource
+        List<DiagnosticReportFull> diagnosticReportFullList = viewerDAL.getDiagnosticReportFullList(patientIds);
+
+        if (diagnosticReportFullList.size() > 0) {
+            org.hl7.fhir.dstu3.model.ListResource observationListResource = ObservationList.getObservationResource();
+            observationListResource.setSubject(new Reference(patientResource));
+            if (!diagnosticReportFullList.isEmpty()) {
+                for (DiagnosticReportFull diagnosticReportFull : diagnosticReportFullList) {
+                    DiagnosticReport diagnosticFhir = new DiagnosticReport(diagnosticReportFull, viewerDAL);
+                    org.hl7.fhir.dstu3.model.DiagnosticReport observationResource = diagnosticFhir.getDiagnosticReport();
+                    observationResource.getMeta().addTag(patientCodingMap.get((diagnosticReportFull.getPatientId())));
+                   // observationResource.setPerformer(Arrays.asList(new Reference(getPractitionerRoleResource(new Long(observationFull.getPractitionerId()), observationFull.getOrganizationId(),viewerDAL))));
+                    observationResource.setSubject(new Reference(patientResource));
+                    if(diagnosticReportFull.getEncounterId() != 0) {
+                        observationResource.setContext(new Reference(getEncounterFhirObj(diagnosticReportFull.getEncounterId(),viewerDAL)));
                     }
                     bundle.addEntry().setResource(observationResource);
                     observationListResource.addEntry().setItem(new Reference(observationResource));

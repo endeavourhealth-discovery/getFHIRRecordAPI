@@ -242,6 +242,40 @@ public class JDBCDAL extends BaseJDBCDAL {
         return observationFullList;
     }
 
+
+    public List<DiagnosticReportFull> getDiagnosticReportFullList(List<Long> id) throws Exception {
+        List<DiagnosticReportFull> diagnosticReportFullList = new ArrayList<>();
+
+        String sql = "SELECT o.id as id," +
+                "o.clinical_effective_date as date," +
+                "coalesce(o.patient_id, '') as patientId, " +
+                "coalesce(o.practitioner_id, '') as practitionerId, " +
+                "coalesce(o.encounter_id, '') as encounterId, " +
+                "coalesce(o.organization_id, '') as organizationId, " +
+                "coalesce(o.result_value, '') as resultValue, " +
+                "coalesce(o.result_value, '') as resultValue, " +
+                "coalesce(c.code,'') as code," +
+                "coalesce(c.name, '') as name, " +
+                "coalesce(c.description, '') as description," +
+                "coalesce(o.result_value_units,'') as resultValueUnits "+
+                "coalesce(cat.description, '') as observationCategory from observation o " +
+                "join concept c on o.non_core_concept_id = c.dbid " +
+                "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
+                " left outer join code_category_values obsCategory on obsCategory.concept_dbid = o.non_core_concept_id and obsCategory in (8,2,3,13,28,33,34,38) " +
+                "left outer join code_category cat on cat.id = obsCategory.category_id "+
+                "where  o.patient_id in (" + StringUtils.join(id, ',') + ") " +
+                "and o.is_problem = 0";
+
+        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next())
+                    diagnosticReportFullList.add(getDiagnosticReportFull(resultSet));
+            }
+        }
+
+        return diagnosticReportFullList;
+    }
+
     public PractitionerFull getPractitionerFull(long practitionerId) throws Exception {
         PractitionerFull result = null;
 
@@ -367,6 +401,23 @@ public class JDBCDAL extends BaseJDBCDAL {
                 .setResultValue(resultSet.getDouble("resultValue"))
                 .setResultValueUnits(resultSet.getString("resultValueUnits"));
         return observationFull;
+    }
+
+    public DiagnosticReportFull getDiagnosticReportFull(ResultSet resultSet) throws SQLException {
+        DiagnosticReportFull diagnosticReportFull = new DiagnosticReportFull();
+
+        diagnosticReportFull.setId(resultSet.getLong("id"))
+                .setPatientId(resultSet.getLong("patientId"))
+                .setCode(resultSet.getString("code"))
+                .setDate(resultSet.getString("date"))
+                .setDescription(resultSet.getString("description"))
+                .setPractitionerId(resultSet.getLong("practitionerId"))
+                .setOrganizationId(resultSet.getLong("organizationId"))
+                .setEncounterId(resultSet.getLong("encounterId"))
+                .setName(resultSet.getString("name"))
+                .setResultValue(resultSet.getDouble("resultValue"))
+                .setResultValueUnits(resultSet.getString("resultValueUnits"));
+        return diagnosticReportFull;
     }
 
     public static PatientFull getPatientFull(ResultSet resultSet) throws SQLException {
