@@ -719,7 +719,8 @@ public class JDBCDAL extends BaseJDBCDAL {
         ArrayList<ImmunizationFull> immunizationFullList =null;
         String sql = " SELECT o.id as id, o.patient_id as patientId, o.clinical_effective_date as cfd, coalesce(o.encounter_id ,'') as encounterid ,coalesce(o.practitioner_id,'') as practitionerid, c.name ,c.code  " +
                      " FROM observation o  join concept c on c.dbid = o.non_core_concept_id " +
-                     " where patient_id in (" + StringUtils.join(patientIds, ',') + ") " +  "and c.name like '%immunisation%' ";
+                    " join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id "+
+                     " where patient_id in (" + StringUtils.join(patientIds, ',') + ") " +  " and ccv.code_category_id in (21) ";
 
         /* sql = " SELECT o.clinical_effective_date as cfd, coalesce(o.encounter_id ,'') as encounterid ,coalesce(o.practitioner_id,'') as practitionerid, c.name ,c.code  " +
                 " FROM observation o  join concept c on c.dbid = o.non_core_concept_id " +
