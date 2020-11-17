@@ -257,14 +257,13 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "coalesce(c.code,'') as code," +
                 "coalesce(c.name, '') as name, " +
                 "coalesce(c.description, '') as description," +
-                "coalesce(o.result_value_units,'') as resultValueUnits "+
+                "coalesce(o.result_value_units,'') as resultValueUnits, "+
                 "coalesce(cat.description, '') as observationCategory from observation o " +
                 "join concept c on o.non_core_concept_id = c.dbid " +
-                "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
-                " left outer join code_category_values obsCategory on obsCategory.concept_dbid = o.non_core_concept_id and obsCategory in (8,2,3,13,28,33,34,38) " +
-                "left outer join code_category cat on cat.id = obsCategory.category_id "+
-                "where  o.patient_id in (" + StringUtils.join(id, ',') + ") " +
-                "and o.is_problem = 0";
+                "left outer join code_category_values obsCategory on obsCategory.concept_dbid = o.non_core_concept_id  " +
+                "left outer join code_category cat on cat.id = obsCategory.code_category_id "+
+                "where  o.patient_id in (" + StringUtils.join(id, ',') + ") and obsCategory.code_category_id  in (28,33,34,38) " +
+                "and o.is_problem = 0 and o.non_core_concept_id in(13) ";
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -816,12 +815,13 @@ public class JDBCDAL extends BaseJDBCDAL {
      */
     public List<FamilyMemberHistoryFull> getFamilyMemberHistoryFullList(List<Long> patientIds) throws Exception {
         List<FamilyMemberHistoryFull> result = null;
-        String sql = "SELECT o.id as id, o.patient_id as patientId, o.clinical_effective_date as date," +
+        String sql = "SELECT o.id as id, o.patient_id as patientId, o.clinical_effective_date as date, " +
                 "CASE WHEN o.problem_end_date IS NULL THEN 'Active' " +
                 "ELSE 'Past' END as status,c.name,c.code " +
                 "FROM observation o " +
-                "join concept c on c.dbid = o.non_core_concept_id \n"+
-                "where patient_id in (" + StringUtils.join(patientIds, ',') + ") " + "and (c.name like '%family history%' or c.name like '%FH:%') order by o.clinical_effective_date DESC";
+                "join concept c on c.dbid = o.non_core_concept_id \n "+
+                "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id\n "+
+                "where patient_id in (" + StringUtils.join(patientIds, ',') + ") " + " and ccv.code_category_id in (17) order by o.clinical_effective_date DESC";
 
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
                 try (ResultSet resultSet = statement.executeQuery()) {
