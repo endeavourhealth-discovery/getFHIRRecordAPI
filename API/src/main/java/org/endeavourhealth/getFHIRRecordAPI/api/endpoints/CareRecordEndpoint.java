@@ -16,7 +16,7 @@ import java.util.*;
 
 import static javax.ws.rs.client.Entity.form;
 
-@Path("patient")
+@Path("/")
 public class CareRecordEndpoint {
     private static final Logger LOG = LoggerFactory.getLogger(CareRecordEndpoint.class);
 
