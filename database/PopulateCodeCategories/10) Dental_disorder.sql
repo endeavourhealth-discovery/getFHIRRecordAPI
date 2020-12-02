@@ -1,0 +1,94 @@
+
+insert into code_category_values (code_category_id, concept_dbid)
+SELECT distinct 10, s.dbid-- , s.id, s.name, p2.id, p2.name, i.id, i.name, p.id, p.name, c.id, c.name
+FROM concept c																			-- Source SNOMED concept
+JOIN concept p ON p.id = 'SN_116680003'													-- "Is A" relationship (child of code)
+JOIN concept_tct t ON t.target = c.dbid AND t.property = p.dbid							-- All children, grand children, etc
+JOIN concept i ON i.dbid = t.source														-- Intermediary (just for info)
+JOIN concept p2 ON p2.id IN ('SN_116680003', 'is_equivalent_to')						-- "Is A" and "Equivalent" relationships (self and legacy maps)
+JOIN concept_property_object cpo ON cpo.value = t.source AND cpo.property = p2.dbid		-- All related
+JOIN concept s ON s.dbid = cpo.dbid														-- Concepts
+WHERE c.id in (
+'SN_1002561000006100',
+'SN_1002691000006110',
+'SN_1002701000006110',
+'SN_1002711000006110',
+'SN_1002721000006100',
+'SN_1002731000006100',
+'SN_1002741000006110',
+'SN_1002751000006110',
+'SN_1003981000006110',
+'SN_1003991000006100',
+'SN_1004001000006100',
+'SN_1004011000006100',
+'SN_1004021000006110',
+'SN_1004031000006110',
+'SN_1004041000006100',
+'SN_1004051000006100',
+'SN_1004061000006100',
+'SN_1004071000006110',
+'SN_1004081000006100',
+'SN_1004091000006110',
+'SN_1004251000006110',
+'SN_1004261000006110',
+'SN_1004611000006110',
+'SN_1004901000006100',
+'SN_1004911000006100',
+'SN_1005801000006100',
+'SN_1005811000006110',
+'SN_1573521000006110',
+'SN_1583781000006110',
+'SN_1599861000006110',
+'SN_1599871000006100',
+'SN_1599881000006100',
+'SN_1599891000006100',
+'SN_1600451000006100',
+'SN_1600461000006110',
+'SN_1663051000006110'
+)
+
+union
+
+SELECT distinct 10, i.dbid
+FROM concept c																			-- Source SNOMED concept
+JOIN concept p ON p.id = 'SN_116680003'													-- "Is A" relationship (child of code)
+JOIN concept_tct t ON t.target = c.dbid AND t.property = p.dbid							-- All children, grand children, etc
+JOIN concept i ON i.dbid = t.source														-- Concepts
+WHERE c.id IN (
+'SN_1002561000006100',
+'SN_1002691000006110',
+'SN_1002701000006110',
+'SN_1002711000006110',
+'SN_1002721000006100',
+'SN_1002731000006100',
+'SN_1002741000006110',
+'SN_1002751000006110',
+'SN_1003981000006110',
+'SN_1003991000006100',
+'SN_1004001000006100',
+'SN_1004011000006100',
+'SN_1004021000006110',
+'SN_1004031000006110',
+'SN_1004041000006100',
+'SN_1004051000006100',
+'SN_1004061000006100',
+'SN_1004071000006110',
+'SN_1004081000006100',
+'SN_1004091000006110',
+'SN_1004251000006110',
+'SN_1004261000006110',
+'SN_1004611000006110',
+'SN_1004901000006100',
+'SN_1004911000006100',
+'SN_1005801000006100',
+'SN_1005811000006110',
+'SN_1573521000006110',
+'SN_1583781000006110',
+'SN_1599861000006110',
+'SN_1599871000006100',
+'SN_1599881000006100',
+'SN_1599891000006100',
+'SN_1600451000006100',
+'SN_1600461000006110',
+'SN_1663051000006110'
+);
