@@ -640,7 +640,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "AS ClinicalStatus, c.name ,c.code \n" +
                 "FROM observation a join concept c on c.dbid = a.non_core_concept_id " +
                 "join code_category_values ccv on ccv.concept_dbid = a.non_core_concept_id " +
-                "where (a.is_problem=1 or ccv.code_category_id in (8)) and patient_id in (" + StringUtils.join(patientIds, ',') + ")";
+                "where (a.is_problem=1 or ccv.code_category_id in (8,28,33,34,38)) and patient_id in (" + StringUtils.join(patientIds, ',') + ")";
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 conditionFullList= getConditionFullList(resultSet);
