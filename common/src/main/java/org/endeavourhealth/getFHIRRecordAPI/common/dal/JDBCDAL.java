@@ -8,7 +8,10 @@ import org.slf4j.LoggerFactory;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class JDBCDAL extends BaseJDBCDAL {
     private static final Logger LOG = LoggerFactory.getLogger(JDBCDAL.class);
@@ -327,6 +330,34 @@ public class JDBCDAL extends BaseJDBCDAL {
             }
         }
         return telecomFullList;
+    }
+
+    public String[] getReligion(Integer patientId) throws Exception {
+        String[] religionData = new String[2];
+
+        String sql = "select " +
+                "c.name as name, c.code as code from observation o " +
+                "join concept c on o.non_core_concept_id = c.dbid " +
+                "join im.code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
+                "where ccv.code_category_id in (45) and " +
+                "patient_id = " + patientId;
+
+        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                if (resultSet.next()) {
+                    return getReligionData(resultSet, religionData);
+                } else {
+                    return null;
+                }
+            }
+        }
+    }
+
+    private String[] getReligionData(ResultSet resultSet, String[] religionData) throws SQLException {
+        religionData[0] = (resultSet.getString("code"));
+        religionData[1] =  resultSet.getString("name");
+        return religionData;
     }
 
     private TelecomFull getTelecom(ResultSet resultSet) throws SQLException {

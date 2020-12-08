@@ -37,7 +37,18 @@ public class Patient {
 		String endDate = replaceNull(patientResult.getRegistrationEndDate());
 		String registrationStatusValue = replaceNull(patientResult.getRegistrationStatusValue());
 
+
 		org.hl7.fhir.dstu3.model.Patient patient = new org.hl7.fhir.dstu3.model.Patient();
+
+		String[] religionData = JDBCDAL.getReligion(Integer.parseInt(id));
+		if (religionData != null) {
+			Extension extension1 = new Extension();
+			List<Coding> coding = new ArrayList<>();
+			coding.add(new Coding("http://hl7.org/fhir/StructureDefinition/patient-religion", religionData[0], religionData[1]));
+			CodeableConcept codeableConcept = (CodeableConcept) extension1.addChild("valueCodeableConcept");
+			codeableConcept.setCoding(coding);
+			patient.addExtension(extension1);
+		}
 
 		patient.setId(UUID.randomUUID().toString());
 
