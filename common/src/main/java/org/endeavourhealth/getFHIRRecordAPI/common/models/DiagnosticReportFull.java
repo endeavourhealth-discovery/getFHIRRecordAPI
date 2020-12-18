@@ -12,6 +12,7 @@ public class DiagnosticReportFull {
     private long organizationId;
     private long practitionerId;
     private long encounterId;
+    private String category;
 
     public long getId() {
         return id;
@@ -109,6 +110,15 @@ public class DiagnosticReportFull {
 
     public DiagnosticReportFull setName(String name) {
         this.name = name;
+        return this;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public DiagnosticReportFull setCategory(String category) {
+        this.category = category;
         return this;
     }
 }

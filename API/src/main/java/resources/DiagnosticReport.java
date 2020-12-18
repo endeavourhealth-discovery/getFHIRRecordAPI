@@ -104,7 +104,9 @@ public class DiagnosticReport {
                 "", extension);
 
         diagnosticReport.setCode(codeConcept);
-
+        CodeableConcept category = new CodeableConcept();
+        category.setText(diagnosticReportFull.getCategory());
+        diagnosticReport.setCategory(category);
         return diagnosticReport;
     }
 

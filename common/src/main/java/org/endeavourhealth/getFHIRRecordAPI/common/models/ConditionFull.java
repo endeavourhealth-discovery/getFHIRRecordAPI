@@ -10,6 +10,7 @@ public class ConditionFull {
     private Date date;
     private String code;
     private String name;
+    private String category;
 
     public long getId() {
         return id;
@@ -49,6 +50,15 @@ public class ConditionFull {
 
     public String getCode() {
         return code;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public ConditionFull setCategory(String category) {
+        this.category = category;
+        return this;
     }
 
     public ConditionFull setCode(String code) {

@@ -261,12 +261,12 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "coalesce(c.name, '') as name, " +
                 "coalesce(c.description, '') as description," +
                 "coalesce(o.result_value_units,'') as resultValueUnits, "+
-                "coalesce(cat.description, '') as observationCategory from observation o " +
+                "coalesce(cat.description, '') as category from observation o " +
                 "join concept c on o.non_core_concept_id = c.dbid " +
                 "left outer join code_category_values obsCategory on obsCategory.concept_dbid = o.non_core_concept_id  " +
                 "left outer join code_category cat on cat.id = obsCategory.code_category_id "+
-                "where  o.patient_id in (" + StringUtils.join(id, ',') + ") and obsCategory.code_category_id  in (28,33,34,38) " +
-                "and o.is_problem = 0 and o.non_core_concept_id in(13) ";
+                "where  o.patient_id in (" + StringUtils.join(id, ',') + ") " +
+                "and (o.is_problem = 0 and o.non_core_concept_id in(13) or obsCategory.code_category_id  in (28,33,34,38))";
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -446,6 +446,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 .setEncounterId(resultSet.getLong("encounterId"))
                 .setName(resultSet.getString("name"))
                 .setResultValue(resultSet.getDouble("resultValue"))
+                .setCategory(resultSet.getString("category"))
                 .setResultValueUnits(resultSet.getString("resultValueUnits"));
         return diagnosticReportFull;
     }
@@ -668,9 +669,10 @@ public class JDBCDAL extends BaseJDBCDAL {
     public List<ConditionFull>  getConditionFullList(List<Long> patientIds) throws Exception {
         ArrayList<ConditionFull> conditionFullList =null;
         String sql = " SELECT a.id as id, a.patient_id as patientId, a.clinical_effective_date as date,IF(ISNULL(a.problem_end_date), 'active', 'resolved') \n" +
-                "AS ClinicalStatus, c.name ,c.code \n" +
+                "AS ClinicalStatus, c.name ,c.code, cat.description as category\n" +
                 "FROM observation a join concept c on c.dbid = a.non_core_concept_id " +
                 "join code_category_values ccv on ccv.concept_dbid = a.non_core_concept_id " +
+                "join code_category cat on cat.id = ccv.code_category_id " +
                 "where (a.is_problem=1 or ccv.code_category_id in (8,28,33,34,38)) and patient_id in (" + StringUtils.join(patientIds, ',') + ")";
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -691,6 +693,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                         .setDate(resultSet.getDate("date"))
                         .setName(resultSet.getString("name"))
                         .setCode(resultSet.getString("code"))
+                        .setCategory(resultSet.getString("category"))
                         .setClinicalStatus(resultSet.getString("ClinicalStatus"));
 
                 conditionlist.add(conditionDtls);

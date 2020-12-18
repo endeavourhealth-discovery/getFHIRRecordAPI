@@ -6,6 +6,7 @@ import org.endeavourhealth.getFHIRRecordAPI.common.dal.JDBCDAL;
 import org.endeavourhealth.getFHIRRecordAPI.common.models.ConditionFull;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 
+import java.util.Arrays;
 import java.util.TimeZone;
 import java.util.UUID;
 
@@ -38,14 +39,18 @@ public class Condition {
 
         }
         // manifestation or codeable concept?
-        CodeableConcept code = new CodeableConcept();
+       /* CodeableConcept code = new CodeableConcept();
         code.setText(conditionfull.getName());
         code.addCoding()
                 .setCode(conditionfull.getCode())
                 .setSystem("http://snomed.info/sct")
                 .setDisplay(conditionfull.getName());
         condition.setId(UUID.randomUUID().toString());
-        condition.setCode(code);
+        condition.setCode(code);*/
+
+        CodeableConcept category = new CodeableConcept();
+        category.setText(conditionfull.getCategory());
+        condition.setCategory(Arrays.asList(category));
 
         return condition;
     }
