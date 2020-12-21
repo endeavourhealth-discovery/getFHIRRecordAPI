@@ -13,6 +13,8 @@ public class ObservationFull {
     private long practitionerId;
     private long encounterId;
 
+    private String category;
+
     public long getId() {
         return id;
     }
@@ -109,6 +111,15 @@ public class ObservationFull {
 
     public ObservationFull setName(String name) {
         this.name = name;
+        return this;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public ObservationFull setCategory(String category) {
+        this.category = category;
         return this;
     }
 }
