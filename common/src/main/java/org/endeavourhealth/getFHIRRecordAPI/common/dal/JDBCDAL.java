@@ -338,7 +338,7 @@ public class JDBCDAL extends BaseJDBCDAL {
         String sql = "select " +
                 "c.name as name, c.code as code from observation o " +
                 "join concept c on o.non_core_concept_id = c.dbid " +
-                "join im.code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
+                "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
                 "where ccv.code_category_id in (45) and " +
                 "patient_id = " + patientId;
 
