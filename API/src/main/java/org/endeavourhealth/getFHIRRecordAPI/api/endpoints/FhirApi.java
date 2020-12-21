@@ -172,7 +172,7 @@ public class FhirApi {
             addFhirEncountersToBundle(patientIds,viewerDAL);
 
             addObservationToBundle(patientIds,viewerDAL);
-           // addDiagnosticReportToBundle(patientIds,viewerDAL);
+            addDiagnosticReportToBundle(patientIds,viewerDAL);
 
             addProcedureToBundle(patientIds,viewerDAL);
 
