@@ -233,7 +233,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "join concept c on o.non_core_concept_id = c.dbid " +
                 "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
                 "left outer join code_category cat on cat.id = ccv.code_category_id "+
-                "where ccv.code_category_id not in (8,2,3,13) and ccv.code_category_id in (28,33,34,38) " +
+                "where ccv.code_category_id not in (8,2,3,13) and ccv.code_category_id in (34) " +
                 "and o.patient_id in (" + StringUtils.join(id, ',') + ") " +
                 "and o.is_problem = 0";
 
@@ -268,7 +268,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "left outer join code_category_values obsCategory on obsCategory.concept_dbid = o.non_core_concept_id  " +
                 "left outer join code_category cat on cat.id = obsCategory.code_category_id "+
                 "where  o.patient_id in (" + StringUtils.join(id, ',') + ") " +
-                "and (o.is_problem = 0 or obsCategory.code_category_id  in (28,33,34,38)) and o.non_core_concept_id in(13)";
+                "and (o.is_problem = 0 or obsCategory.code_category_id  in (28,33,38) and ccv.code_category_id not in (34)) and o.non_core_concept_id in(13)";
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
