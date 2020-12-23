@@ -12,6 +12,8 @@ public class ConditionFull {
     private String name;
     private String category;
 
+    private boolean problem;
+
     public long getId() {
         return id;
     }
@@ -65,6 +67,16 @@ public class ConditionFull {
         this.code = code;
         return this;
     }
+
+    public boolean isProblem() {
+        return problem;
+    }
+
+    public ConditionFull setProblem(boolean problem) {
+        this.problem = problem;
+        return this;
+    }
+
 
     public String getName() {
         return name;

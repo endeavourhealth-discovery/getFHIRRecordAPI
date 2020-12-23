@@ -268,7 +268,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "left outer join code_category_values obsCategory on obsCategory.concept_dbid = o.non_core_concept_id  " +
                 "left outer join code_category cat on cat.id = obsCategory.code_category_id "+
                 "where  o.patient_id in (" + StringUtils.join(id, ',') + ") " +
-                "and (o.is_problem = 0 or obsCategory.code_category_id  in (28,33,38) and ccv.code_category_id not in (34)) and o.non_core_concept_id in(13)";
+                "and (o.is_problem = 0 or obsCategory.code_category_id  in (28,33,38) and obsCategory.code_category_id not in (34)) and o.non_core_concept_id in(13)";
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -672,11 +672,11 @@ public class JDBCDAL extends BaseJDBCDAL {
     public List<ConditionFull>  getConditionFullList(List<Long> patientIds) throws Exception {
         ArrayList<ConditionFull> conditionFullList =null;
         String sql = " SELECT a.id as id, a.patient_id as patientId, a.clinical_effective_date as date,IF(ISNULL(a.problem_end_date), 'active', 'resolved') \n" +
-                "AS ClinicalStatus, c.name ,c.code, cat.description as category\n" +
+                "AS ClinicalStatus, c.name ,c.code, cat.description as category\n, a.is_problem as problem " +
                 "FROM observation a join concept c on c.dbid = a.non_core_concept_id " +
                 "join code_category_values ccv on ccv.concept_dbid = a.non_core_concept_id " +
                 "join code_category cat on cat.id = ccv.code_category_id " +
-                "where (a.is_problem=1 or ccv.code_category_id in (8,28,33,34,38)) and patient_id in (" + StringUtils.join(patientIds, ',') + ")";
+                "where ccv.code_category_id in (8,28,33,34,38) and patient_id in (" + StringUtils.join(patientIds, ',') + ")";
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 conditionFullList= getConditionFullList(resultSet);
@@ -697,6 +697,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                         .setName(resultSet.getString("name"))
                         .setCode(resultSet.getString("code"))
                         .setCategory(resultSet.getString("category"))
+                        .setProblem(resultSet.getBoolean("problem"))
                         .setClinicalStatus(resultSet.getString("ClinicalStatus"));
 
                 conditionlist.add(conditionDtls);

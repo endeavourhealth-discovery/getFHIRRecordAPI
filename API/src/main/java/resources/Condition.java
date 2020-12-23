@@ -5,6 +5,7 @@ import org.endeavourhealth.getFHIRRecordAPI.common.constants.ResourceConstants;
 import org.endeavourhealth.getFHIRRecordAPI.common.dal.JDBCDAL;
 import org.endeavourhealth.getFHIRRecordAPI.common.models.ConditionFull;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Coding;
 
 import java.util.Arrays;
 import java.util.TimeZone;
@@ -49,7 +50,14 @@ public class Condition {
         condition.setCode(code);*/
 
         CodeableConcept category = new CodeableConcept();
-        category.setText(conditionfull.getCategory());
+        Coding coding = new Coding();
+        coding.setSystem("http://terminology.hl7.org/CodeSystem/condition-category");
+        if(conditionfull.isProblem()){
+            coding.setDisplay("Problems").setCode("problem-list-item");
+        } else {
+            coding.setDisplay("Encounter Diagnosis").setCode("encounter-diagnosis");
+        }
+        category.addCoding(coding);
         condition.setCategory(Arrays.asList(category));
 
         return condition;
