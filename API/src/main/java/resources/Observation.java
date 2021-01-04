@@ -106,6 +106,9 @@ public class Observation {
                 "",extension);
 
         observation.setCode(codeConcept);
+        CodeableConcept category = new CodeableConcept();
+        category.setText(observationFull.getCategory());
+        observation.setCategory(Arrays.asList(category));
 
         return observation;
     }
