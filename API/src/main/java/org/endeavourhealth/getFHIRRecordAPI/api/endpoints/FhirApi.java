@@ -1,11 +1,13 @@
 package org.endeavourhealth.getFHIRRecordAPI.api.endpoints;
 
 import ca.uhn.fhir.context.FhirContext;
+import com.fasterxml.jackson.databind.JsonNode;
 import models.Parameter;
 import models.Params;
 import models.Request;
 import models.ResourceNotFoundException;
 import org.apache.commons.lang3.StringUtils;
+import org.endeavourhealth.common.config.ConfigManager;
 import org.endeavourhealth.getFHIRRecordAPI.common.constants.ResourceConstants;
 import org.endeavourhealth.getFHIRRecordAPI.common.dal.JDBCDAL;
 import org.endeavourhealth.getFHIRRecordAPI.common.models.*;
@@ -40,19 +42,26 @@ import java.util.stream.Stream;
 
 public class FhirApi {
     private static final Logger LOG = LoggerFactory.getLogger(FhirApi.class);
+    private static final String APP_ID_FHIR_RECORD_API = "fhir-record-api";
+    private static final String CONFIG_ID_RUN_MODE = "run_mode";
+    private static final String CONFIG_ID_RUN_MODE_TEST = "test";
+
 
     HashMap<Long, Resource> organizationFhirMap;
     HashMap<Long, Resource> encounterFhirMap;
     Map<Long, List<Resource>> practitionerAndRoleResource;
     Map<Long, Coding> patientCodingMap;
     Map<String, Resource> episodeOfCareResourceMap;
+    JsonNode jsonTestNHSIdMappings;
+    String originalNHSNumber = null;
+    String runMode = null;
 
     Bundle bundle;
     org.hl7.fhir.dstu3.model.Patient patientResource;
-
-    public Object handleRequest(Request request) throws ResourceNotFoundException {
+    public JSONObject handleRequest(Request request) throws ResourceNotFoundException {
         JSONObject json = null;
-
+        JSONObject json1 = null;
+        List<JSONObject>  jsonObjectList = new ArrayList<>();
         switch (request.getHttpMethod()) {
             case "POST":
                 Params params = request.getParams();
@@ -68,6 +77,13 @@ public class FhirApi {
                     if (paramName.equals("patientNHSNumber")) {
                         if(nhsNumber.equals("0")) {
                             nhsNumber = param.getValueIdentifier().getValue();
+                            //get run mode
+                            runMode = getRunMode(APP_ID_FHIR_RECORD_API, CONFIG_ID_RUN_MODE);
+                            //test mode
+                            if (runMode != null && runMode.equals(CONFIG_ID_RUN_MODE_TEST)) {
+                                originalNHSNumber = nhsNumber;
+                                nhsNumber = getMappedTestNHSNumber(nhsNumber);
+                            }
                         }
                     } else if (paramName.equals("patientDOB")) {
                             dateOfBirth = param.getValueIdentifier().getValue();
@@ -84,6 +100,7 @@ public class FhirApi {
 
                 try {
                     json = getFhirBundle(0, nhsNumber, dateOfBirth, onlyDemographics, activePatientsOnly);
+
                 } catch (Exception e) {
                     throw new ResourceNotFoundException("Resource error:" + e);
                 }
@@ -91,6 +108,45 @@ public class FhirApi {
             default:
                 // throw exception if called method is not implemented
                 break;
+        }
+        return null;
+    }
+
+    /*
+     * Get run mode from config table
+     */
+    private String getRunMode(String app_id, String config_id) {
+        try {
+            ConfigManager.Initialize(APP_ID_FHIR_RECORD_API);
+            jsonTestNHSIdMappings = ConfigManager.getConfigurationAsJson(CONFIG_ID_RUN_MODE);
+            runMode = jsonTestNHSIdMappings.get("mode").asText();
+            LOG.info("@@@@@ Run Mode:" + runMode);
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+        }
+        return runMode;
+    }
+
+    /*
+     * Check if the mapping for input NHS number exists in the config table and return the mapped NHS number
+     */
+    private String getMappedTestNHSNumber(String nhsNumberIn) throws ResourceNotFoundException {
+        JsonNode nhsMappingsNodes = jsonTestNHSIdMappings.get("nhs_mappings");
+        String mappedNHSNumber = null;
+        if (nhsMappingsNodes != null) {
+            for (int i = 0; i < nhsMappingsNodes.size(); i++) {
+                JsonNode nhsMappingNode = nhsMappingsNodes.get(i);
+                String anonymisedNHSNumber = nhsMappingNode.get("anonymised").asText();
+                if(nhsNumberIn != null && nhsNumberIn.equals(anonymisedNHSNumber)) {
+                    mappedNHSNumber = nhsMappingNode.get("mapped").asText();
+                    return mappedNHSNumber;
+                }
+            }
+        }
+        if (mappedNHSNumber == null) {
+            LOG.error("NHS number " + nhsNumberIn + " passed in is not in the mapping config");
+            throw new ResourceNotFoundException("Resource error: NHS number " +
+                    "" + nhsNumberIn + " passed in is not in the mapping config");
         }
         return null;
     }
@@ -120,6 +176,11 @@ public class FhirApi {
                 patient = viewerDAL.getPatientFull(id, nhsNumber, dateOfBirth, activePatientsOnly);
             else
                 patient = viewerDAL.getPatientFull(nhsNumber, activePatientsOnly);
+
+            //hide  Demographic details for run mode = test
+            if (runMode != null && runMode.equals(CONFIG_ID_RUN_MODE_TEST)) {
+              hideDemographicInfo(patient);
+            }
 
             if (patient == null)
                 throw new ResourceNotFoundException("Patient resource with id = '" + nhsNumber + "' not found");
@@ -202,6 +263,28 @@ public class FhirApi {
 
         JSONParser parser = new JSONParser();
         return (JSONObject) parser.parse(encodedBundle);
+    }
+    /*
+     * Replace demographic info with xxxx and dob/dod with 09-Sep-9999
+     */
+    private PatientFull hideDemographicInfo( PatientFull patient) {
+        String murphString = "XXXX";
+
+        patient.setFirstname(murphString);
+        patient.setLastname(murphString);
+        patient.setDob(new Date("09-Sep-9999"));
+        patient.setAdd1(murphString);
+        patient.setAdd2(murphString);
+        patient.setAdd3(murphString);
+        patient.setAdd4(murphString);
+        patient.setPostcode(murphString);
+        patient.setNhsNumber(originalNHSNumber);
+        patient.setAdduse(murphString);
+        patient.setCity(murphString);
+        patient.setDod(new Date("09-Sep-9999"));
+
+        return patient;
+
     }
 
     private org.hl7.fhir.dstu3.model.PractitionerRole getPractitionerRoleResource(Long practitionerId, Long organizationID,JDBCDAL viewerDAL) throws Exception {
