@@ -40,22 +40,25 @@ public class Condition {
 
         }
         // manifestation or codeable concept?
-       /* CodeableConcept code = new CodeableConcept();
+        CodeableConcept code = new CodeableConcept();
         code.setText(conditionfull.getName());
         code.addCoding()
                 .setCode(conditionfull.getCode())
                 .setSystem("http://snomed.info/sct")
                 .setDisplay(conditionfull.getName());
         condition.setId(UUID.randomUUID().toString());
-        condition.setCode(code);*/
+        condition.setCode(code);
 
         CodeableConcept category = new CodeableConcept();
         Coding coding = new Coding();
         coding.setSystem("http://terminology.hl7.org/CodeSystem/condition-category");
+
         if(conditionfull.isProblem()){
-            coding.setDisplay("Problems").setCode("problem-list-item");
+            coding.setCode("problem-list-item");
+            coding.setDisplay("Problem list Item");
         } else {
-            coding.setDisplay("Encounter Diagnosis").setCode("encounter-diagnosis");
+            coding.setCode("encounter-diagnosis");
+            coding.setDisplay("encounter diagnosis");
         }
         category.addCoding(coding);
         condition.setCategory(Arrays.asList(category));
