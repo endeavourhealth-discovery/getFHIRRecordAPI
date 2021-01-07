@@ -1,5 +1,5 @@
 
-insert into code_category (id, description)
+insert ignore into code_category (id, description)
 values
 (1, 'Administration, documents and attachments'),
 (2, 'Allergy and adverse drug reactions'),
@@ -47,5 +47,6 @@ values
 (44, 'Regiment'),
 (45, 'Religion'),
 (46, 'Symptoms and Findings'),
-(47, 'Trade/Branch')
+(47, 'Trade/Branch'),
+(48, 'Main language');
 
