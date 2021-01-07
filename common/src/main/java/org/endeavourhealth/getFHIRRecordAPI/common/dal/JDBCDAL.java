@@ -348,7 +348,7 @@ public class JDBCDAL extends BaseJDBCDAL {
             try (ResultSet resultSet = statement.executeQuery()) {
 
                 if (resultSet.next()) {
-                    return getReligionData(resultSet, religionData);
+                    return getDemographicsData(resultSet, religionData);
                 } else {
                     return null;
                 }
@@ -356,10 +356,32 @@ public class JDBCDAL extends BaseJDBCDAL {
         }
     }
 
-    private String[] getReligionData(ResultSet resultSet, String[] religionData) throws SQLException {
-        religionData[0] = (resultSet.getString("code"));
-        religionData[1] =  resultSet.getString("name");
-        return religionData;
+    public String[] getLanguage(Integer patientId) throws Exception {
+        String[] language = new String[2];
+
+        String sql = "select " +
+                "c.name as name, c.code as code from observation o " +
+                "join concept c on o.non_core_concept_id = c.dbid " +
+                "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
+                "where ccv.code_category_id in (48) and " +
+                "patient_id = " + patientId;
+
+        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                if (resultSet.next()) {
+                    return getDemographicsData(resultSet, language);
+                } else {
+                    return null;
+                }
+            }
+        }
+    }
+
+    private String[] getDemographicsData(ResultSet resultSet, String[] data) throws SQLException {
+        data[0] = (resultSet.getString("code"));
+        data[1] =  resultSet.getString("name");
+        return data;
     }
 
     private TelecomFull getTelecom(ResultSet resultSet) throws SQLException {

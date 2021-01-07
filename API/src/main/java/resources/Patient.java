@@ -8,6 +8,7 @@ import org.hl7.fhir.dstu3.model.*;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,6 +49,17 @@ public class Patient {
 			CodeableConcept codeableConcept = (CodeableConcept) extension1.addChild("valueCodeableConcept");
 			codeableConcept.setCoding(coding);
 			patient.addExtension(extension1);
+		}
+
+		String[] language = JDBCDAL.getLanguage(Integer.parseInt(id));
+		if (language != null) {
+			org.hl7.fhir.dstu3.model.Patient.PatientCommunicationComponent patientCommunicationComponent = new org.hl7.fhir.dstu3.model.Patient.PatientCommunicationComponent();
+			List<Coding> coding = new ArrayList<>();
+			coding.add(new Coding(null, language[0], language[1]));
+			CodeableConcept codeableConcept = new CodeableConcept();
+			codeableConcept.setCoding(coding);
+			patientCommunicationComponent.setLanguage(codeableConcept);
+			patient.setCommunication(Arrays.asList(patientCommunicationComponent));
 		}
 
 		patient.setId(UUID.randomUUID().toString());
