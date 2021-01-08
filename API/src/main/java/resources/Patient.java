@@ -45,7 +45,7 @@ public class Patient {
 		if (religionData != null) {
 			Extension extension1 = new Extension();
 			List<Coding> coding = new ArrayList<>();
-			coding.add(new Coding("http://hl7.org/fhir/StructureDefinition/patient-religion", religionData[0], religionData[1]));
+			coding.add(new Coding("https://fhir.hl7.org.uk/STU3/StructureDefinition/Extension-CareConnect-ReligiousAffiliation-1", religionData[0], religionData[1]));
 			CodeableConcept codeableConcept = (CodeableConcept) extension1.addChild("valueCodeableConcept");
 			codeableConcept.setCoding(coding);
 			patient.addExtension(extension1);
