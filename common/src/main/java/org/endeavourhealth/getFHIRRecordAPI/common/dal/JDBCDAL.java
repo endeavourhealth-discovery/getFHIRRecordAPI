@@ -306,7 +306,8 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "ELSE 'Past' END as status,c.name, c.code\n" +
                 "FROM observation o\n" +
                 "join concept c on c.dbid = o.non_core_concept_id\n" +
-                "where patient_id in (" + StringUtils.join(patientIds, ',') + ") " + "and c.name like '%(procedure)' order by o.clinical_effective_date DESC";
+                "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
+                "where patient_id in (" + StringUtils.join(patientIds, ',') + ") " + "and ccv.code_category_id in (45) order by o.clinical_effective_date DESC";
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
