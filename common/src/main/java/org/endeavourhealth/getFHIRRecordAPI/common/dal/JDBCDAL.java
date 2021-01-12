@@ -299,6 +299,7 @@ public class JDBCDAL extends BaseJDBCDAL {
         List<ProcedureFull> procedureList = new ArrayList<>();
 
         String sql = "SELECT coalesce(o.clinical_effective_date, '') as date," +
+                "coalesce(o.id, '') as id," +
                 "coalesce(o.patient_id, '') as patientId," +
                 "coalesce(o.practitioner_id, '') as practitionerId," +
                 "coalesce(o.organization_id, '') as organizationId," +
@@ -403,6 +404,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 .setPatientId(resultSet.getLong("patientId"))
                 .setStatus(resultSet.getString("status"))
                 .setName(resultSet.getString("name"))
+                .setId(resultSet.getString("id"))
                 .setPractitionerId(resultSet.getLong("practitionerId"))
                 .setOrganizationId(resultSet.getLong("organizationId"))
                 .setCode(resultSet.getString("code"));
