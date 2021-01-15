@@ -34,7 +34,7 @@ values
 (31, 'Nursing problem domain'),
 (32, 'Obstetrics and Birth'),
 (33, 'Pathology specimen'),
-(34, 'Personal Health and Social'),
+(34, 'social-history'),
 (35, 'Planned dental intervention'),
 (36, 'Problem rating scale for outcomes'),
 (37, 'Procedure code'),
