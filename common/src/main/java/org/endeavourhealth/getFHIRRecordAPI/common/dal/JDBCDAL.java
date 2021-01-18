@@ -625,7 +625,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "coalesce(ms.quantity_unit,'') as qUnit, \n" +
                 "max(coalesce(mo.clinical_effective_date,'')) as valueDtTime, " +
                 "ms.authorisation_type_concept_id as atCid " +
-                "from medication_statement ms join medication_order mo on ms.id=mo.medication_statement_id " +
+                "from medication_statement ms join medication_order mo on ms.id=mo.medication_statement_id and ms.patient_id = mo.patient_id " +
                 "join concept c on c.dbid=ms.non_core_concept_id where ms.patient_id in (" + StringUtils.join(patientIds, ',') + ") " +  "group by msid";
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
