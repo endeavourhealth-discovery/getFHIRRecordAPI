@@ -191,8 +191,11 @@ public class FhirApi {
                 LOG.info("@@@ patient not found");
                 throw new ResourceNotFoundException("Patient resource with id = '" + nhsNumber + "' not found");
             }
+
+            LOG.info("@@@ patient not null");
             patientResource = Patient.getPatientResource(patient, viewerDAL);
 
+            LOG.info("@@@ patient got resource");
             bundle = new Bundle();
             bundle.setType(Bundle.BundleType.COLLECTION);
             Meta meta = new Meta();
@@ -224,10 +227,12 @@ public class FhirApi {
             }
             setCoding(patientMap);
 
+            LOG.info("@@@ patient coding set");
             addFhirAllergiesToBundle(patientIds,viewerDAL);
 
             // Adding MedicationStatement, MedicationRequest, Medication & MedicationStatementList to bundle
             addFhirMedicationStatementToBundle(patientIds,viewerDAL);
+            LOG.info("@@@ patient got meds");
 
             addFhirAppointmentToBundle(patientIds,viewerDAL);
 
@@ -252,6 +257,9 @@ public class FhirApi {
             addObservationToBundle(patientIds,viewerDAL);
 
             addToBundle("organizations");
+
+            LOG.info("@@@ patient got everything ");
+
 
             if (!practitionerAndRoleResource.isEmpty()) {
                 for (Map.Entry entry : practitionerAndRoleResource.entrySet()) {
