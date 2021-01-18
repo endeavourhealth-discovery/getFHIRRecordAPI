@@ -118,7 +118,7 @@ public class FhirApi {
      */
     private String getRunMode(String app_id, String config_id) {
         try {
-            ConfigManager.Initialize(APP_ID_FHIR_RECORD_API);
+
             jsonTestNHSIdMappings = ConfigManager.getConfigurationAsJson(CONFIG_ID_RUN_MODE);
             runMode = jsonTestNHSIdMappings.get("mode").asText();
             LOG.info("@@@@@ Run Mode:" + runMode);
