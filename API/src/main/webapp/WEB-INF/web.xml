@@ -99,10 +99,10 @@
     </security-constraint>
 
     <!-- use Keycloak authentication valve installed in the container -->
-    <login-config>
+    <!--<login-config>
         <auth-method>KEYCLOAK</auth-method>
         <realm-name>Endeavour</realm-name>
-    </login-config>
+    </login-config>-->
 
     <!-- all roles in the system MUST be specified here -->
     <security-role>
