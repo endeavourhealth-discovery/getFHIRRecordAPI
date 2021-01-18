@@ -705,12 +705,14 @@ public class JDBCDAL extends BaseJDBCDAL {
 
     public List<ConditionFull>  getConditionFullList(List<Long> patientIds) throws Exception {
         ArrayList<ConditionFull> conditionFullList =null;
-        String sql = " SELECT a.id as id, a.patient_id as patientId, a.clinical_effective_date as date,IF(ISNULL(a.problem_end_date), 'active', 'resolved') \n" +
-                "AS ClinicalStatus, c.name ,c.code, cat.description as category\n, a.is_problem as problem " +
+        String sql = "SELECT a.id as id, a.patient_id as patientId, a.clinical_effective_date as date,IF(ISNULL(a.problem_end_date), 'active', 'resolved') " +
+                "AS ClinicalStatus, c.name ,c.code, cat2.description as category, a.is_problem as problem " +
                 "FROM observation a join concept c on c.dbid = a.non_core_concept_id " +
                 "join code_category_values ccv on ccv.concept_dbid = a.non_core_concept_id " +
                 "join code_category cat on cat.id = ccv.code_category_id " +
-                "where ccv.code_category_id in (8,28,33,34,38) and patient_id in (" + StringUtils.join(patientIds, ',') + ")";
+                "left join code_category_values ccv2 on ccv2.concept_dbid = a.non_core_concept_id " +
+                "left join code_category cat2 on cat2.id = ccv2.code_category_id " +
+                "where ccv.code_category_id = 8 and ccv2.code_category_id in (28,33,34,38) and patient_id in (" + StringUtils.join(patientIds, ',') + ")";
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 conditionFullList= getConditionFullList(resultSet);
