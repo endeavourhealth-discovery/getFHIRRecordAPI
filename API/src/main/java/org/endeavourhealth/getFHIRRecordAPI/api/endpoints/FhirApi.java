@@ -171,9 +171,12 @@ public class FhirApi {
         observationIds = new HashSet<>();
 
 
+        LOG.info("@@@@@ getting fhirBundle");
+
         try (JDBCDAL viewerDAL = new JDBCDAL()) {
 
 
+            LOG.info("@@@@@ got DAL");
             if (id > 0 || !dateOfBirth.equals("0"))
                 patient = viewerDAL.getPatientFull(id, nhsNumber, dateOfBirth, activePatientsOnly);
             else
