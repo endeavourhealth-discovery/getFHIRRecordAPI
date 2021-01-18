@@ -93,9 +93,9 @@
             <web-resource-name>api</web-resource-name>
             <url-pattern>/*</url-pattern>
         </web-resource-collection>
-        <auth-constraint>
+        <!--<auth-constraint>
             <role-name>eds_user</role-name>
-        </auth-constraint>
+        </auth-constraint>-->
     </security-constraint>
 
     <!-- use Keycloak authentication valve installed in the container -->
