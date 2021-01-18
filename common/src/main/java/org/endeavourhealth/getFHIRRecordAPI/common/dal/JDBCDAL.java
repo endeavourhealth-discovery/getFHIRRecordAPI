@@ -624,7 +624,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "coalesce(ms.quantity_unit,'') as qUnit, \n" +
                 "max(coalesce(mo.clinical_effective_date,'')) as valueDtTime, " +
                 "ms.authorisation_type_concept_id as atCid " +
-                "from medication_statement ms join medication_order mo on ms.id=mo.medication_statement_id " +
+                "from medication_statement ms join medication_order mo on ms.id=mo.medication_statement_id and ms.patient_id = mo.patient_id " +
                 "join concept c on c.dbid=ms.non_core_concept_id where ms.patient_id in (" + StringUtils.join(patientIds, ',') + ") " +  "group by msid";
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
@@ -665,10 +665,12 @@ public class JDBCDAL extends BaseJDBCDAL {
      * @return
      * @throws Exception
      */
-    public List<MedicationOrderFull> getMedicationOrderFullList(long msId) throws Exception {
+    public List<MedicationOrderFull> getMedicationOrderFullList(long msId, List<Long> patientIds) throws Exception {
         List<MedicationOrderFull> result = null;
         String sql = "SELECT mo.id, mo.practitioner_id as prid, mo.organization_id as oid, mo.medication_statement_id as msid, mo.clinical_effective_date as clinicalEffDt, mo.dose, mo.quantity_unit as qUnit, " +
-                "mo.quantity_value as qValue FROM medication_order mo join concept c on c.dbid=mo.non_core_concept_id where mo.medication_statement_id=? order by clinical_effective_date, msid";
+                "mo.quantity_value as qValue FROM medication_order mo where mo.medication_statement_id=? " +
+                " and mo.patient_id in (" + StringUtils.join(patientIds, ',') + ") " +
+                "order by clinical_effective_date, msid";
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             statement.setLong(1, msId);
