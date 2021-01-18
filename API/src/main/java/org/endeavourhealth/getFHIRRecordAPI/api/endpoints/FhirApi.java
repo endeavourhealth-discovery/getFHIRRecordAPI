@@ -181,14 +181,16 @@ public class FhirApi {
                 patient = viewerDAL.getPatientFull(id, nhsNumber, dateOfBirth, activePatientsOnly);
             else
                 patient = viewerDAL.getPatientFull(nhsNumber, activePatientsOnly);
-
+                LOG.info("@@@ got the whole patient");
             //hide  Demographic details for run mode = test
             if (runMode != null && runMode.equals(CONFIG_ID_RUN_MODE_TEST)) {
               hideDemographicInfo(patient);
             }
 
-            if (patient == null)
+            if (patient == null) {
+                LOG.info("@@@ patient not found");
                 throw new ResourceNotFoundException("Patient resource with id = '" + nhsNumber + "' not found");
+            }
             patientResource = Patient.getPatientResource(patient, viewerDAL);
 
             bundle = new Bundle();

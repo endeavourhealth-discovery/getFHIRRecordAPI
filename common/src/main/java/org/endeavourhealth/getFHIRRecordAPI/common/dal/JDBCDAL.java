@@ -489,7 +489,7 @@ public class JDBCDAL extends BaseJDBCDAL {
 
     public static PatientFull getPatientFull(ResultSet resultSet) throws SQLException {
         PatientFull patient = new PatientFull();
-        LOG.info("@@@@@ getting full patient");
+        LOG.info("@@@@@ getting full patient: " + resultSet.getString("id"));
 
         patient
                 .setId(resultSet.getString("id"))
