@@ -123,6 +123,8 @@ public class JDBCDAL extends BaseJDBCDAL {
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next())
                     result = getPatientFull(resultSet);
+            } catch (Exception e) {
+                LOG.info("@@@ error message : " + e.getMessage());
             }
         }
 
