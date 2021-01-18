@@ -61,7 +61,7 @@
     <!-- startup class, initializes config manager -->
     <context-param>
         <param-name>app_id</param-name>
-        <param-value>FHIR_API</param-value>
+        <param-value>fhir-record-api</param-value>
     </context-param>
     <listener>
         <listener-class>

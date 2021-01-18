@@ -42,10 +42,8 @@ import java.util.stream.Stream;
 
 public class FhirApi {
     private static final Logger LOG = LoggerFactory.getLogger(FhirApi.class);
-    private static final String APP_ID_FHIR_RECORD_API = "fhir-record-api";
     private static final String CONFIG_ID_RUN_MODE = "run_mode";
     private static final String CONFIG_ID_RUN_MODE_TEST = "test";
-
 
     HashMap<Long, Resource> organizationFhirMap;
     HashMap<Long, Resource> encounterFhirMap;
@@ -79,7 +77,7 @@ public class FhirApi {
                         if(nhsNumber.equals("0")) {
                             nhsNumber = param.getValueIdentifier().getValue();
                             //get run mode
-                            runMode = getRunMode(APP_ID_FHIR_RECORD_API, CONFIG_ID_RUN_MODE);
+                            runMode = getRunMode();
                             //test mode
                             if (runMode != null && runMode.equals(CONFIG_ID_RUN_MODE_TEST)) {
                                 originalNHSNumber = nhsNumber;
@@ -116,7 +114,7 @@ public class FhirApi {
     /*
      * Get run mode from config table
      */
-    private String getRunMode(String app_id, String config_id) {
+    private String getRunMode() {
         try {
 
             jsonTestNHSIdMappings = ConfigManager.getConfigurationAsJson(CONFIG_ID_RUN_MODE);
