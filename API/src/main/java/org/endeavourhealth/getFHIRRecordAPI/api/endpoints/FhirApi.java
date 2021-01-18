@@ -521,7 +521,7 @@ public class FhirApi {
                 List<MedicationOrderFull> medicationRequestList = null;
                 org.hl7.fhir.dstu3.model.MedicationRequest medicationRequestResource = null;
 
-                medicationRequestList = viewerDAL.getMedicationOrderFullList(medicationStatementFull.getId());
+                medicationRequestList = viewerDAL.getMedicationOrderFullList(medicationStatementFull.getId(),patientIds );
                 if (medicationRequestList != null || medicationRequestList.size() > 0) {
 
                     List<Reference> primaryMedReqRefList = new ArrayList<>();
