@@ -444,7 +444,9 @@ public class FhirApi {
             observationListResource.setSubject(new Reference(patientResource));
             if (!observationFullList.isEmpty()) {
                 for (ObservationFull observationFull : observationFullList) {
-                    if(!observationIds.contains(observationFull.getId())) {
+                    String observationId = String.valueOf(observationFull.getId());
+                    if(!observationIds.contains(observationId)) {
+                        observationIds.add(observationId);
                         Observation observationFhir = new Observation(observationFull, viewerDAL);
                         org.hl7.fhir.dstu3.model.Observation observationResource = observationFhir.getObservationResource();
                         observationResource.getMeta().addTag(patientCodingMap.get((observationFull.getPatientId())));
