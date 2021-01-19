@@ -101,7 +101,7 @@ public class FhirApi {
                     json = getFhirBundle(0, nhsNumber, dateOfBirth, onlyDemographics, activePatientsOnly);
 
                 } catch (Exception e) {
-                    LOG.info(e.getMessage());
+                    LOG.info(e.toString() );
                     throw new ResourceNotFoundException("Resource error:" + e);
                 }
                 return json;
@@ -179,6 +179,7 @@ public class FhirApi {
               hideDemographicInfo(patient);
             }
 
+            LOG.info("Got Patient");
             if (patient == null) {
                 throw new ResourceNotFoundException("Patient resource with id = '" + nhsNumber + "' not found");
             }
@@ -218,31 +219,44 @@ public class FhirApi {
 
             addFhirAllergiesToBundle(patientIds,viewerDAL);
 
+            LOG.info("Got Allergies");
             // Adding MedicationStatement, MedicationRequest, Medication & MedicationStatementList to bundle
             addFhirMedicationStatementToBundle(patientIds,viewerDAL);
 
+            LOG.info("Got Meds");
             addFhirAppointmentToBundle(patientIds,viewerDAL);
 
+            LOG.info("Got Appts");
             addFhirFamilyMemberHistoryToBundle(patientIds,viewerDAL);
 
+            LOG.info("Got family");
             addFhirConditionsToBundle(patientIds,viewerDAL);
 
+            LOG.info("Got condition");
             addEpisodeOfCareToBundle(patientIds,viewerDAL);
 
+            LOG.info("Got EOC");
             addFhirEncountersToBundle(patientIds,viewerDAL);
 
+            LOG.info("Got encounter");
             addDiagnosticReportToBundle(patientIds,viewerDAL);
 
+            LOG.info("Got diag");
             addProcedureToBundle(patientIds,viewerDAL);
 
+            LOG.info("Got proc");
             addLocationToBundle(patient.getOrglocation(),viewerDAL);
 
+            LOG.info("Got loc");
             addFhirImmunizationsToBundle(patientIds,viewerDAL);
 
+            LOG.info("Got imms");
             addFhirReferralRequestsToBundle(patientIds,viewerDAL);
 
+            LOG.info("Got refs");
             addObservationToBundle(patientIds,viewerDAL);
 
+            LOG.info("Got obs");
             addToBundle("organizations");
 
 
