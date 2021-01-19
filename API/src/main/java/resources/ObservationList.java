@@ -10,7 +10,6 @@ public class ObservationList {
     private static final Logger LOG = LoggerFactory.getLogger(ObservationList.class);
 
     public static org.hl7.fhir.dstu3.model.ListResource getObservationResource() {
-        LOG.info("Entering getObservationResource() method");
         ListResource observationList = new org.hl7.fhir.dstu3.model.ListResource();
         observationList.setStatus(ListResource.ListStatus.CURRENT);
         observationList.setTitle(ResourceConstants.TITLE);

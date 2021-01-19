@@ -20,7 +20,6 @@ public class EpisodeOfCare {
     private static final Logger LOG = LoggerFactory.getLogger(EpisodeOfCare.class);
 
     public static org.hl7.fhir.dstu3.model.EpisodeOfCare getEpisodeOfCareResource(List<EpisodeOfCareFull> episodeOfCareFullList) {
-        LOG.info("Entering getEpisodeOfCareResource() method");
         org.hl7.fhir.dstu3.model.EpisodeOfCare episodeOfCare = new org.hl7.fhir.dstu3.model.EpisodeOfCare();
 
         UUID uuid = UUID.randomUUID();

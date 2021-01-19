@@ -75,9 +75,6 @@ public class JDBCDAL extends BaseJDBCDAL {
     public PatientFull getPatientFull(String nhsNumber, boolean includeOnlyActivePatient) throws Exception {
         PatientFull result = null;
 
-
-        LOG.info("@@@@@ getting full patient");
-
         String sql = "SELECT p.id,"+
                 "coalesce(p.organization_id,'') as orglocation,"+
                 "coalesce(o.name,'') as orgname,"+
@@ -119,13 +116,9 @@ public class JDBCDAL extends BaseJDBCDAL {
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             statement.setString(1, nhsNumber);
 
-            LOG.info("@@@@@ executing statement");
             try (ResultSet resultSet = statement.executeQuery()) {
-                LOG.info("@@@@@ got statement");
                 if (resultSet.next())
                     result = getPatientFull(resultSet);
-            } catch (Exception e) {
-                LOG.info("@@@ error message : " + e.getMessage());
             }
         }
 
@@ -488,7 +481,6 @@ public class JDBCDAL extends BaseJDBCDAL {
 
     public static PatientFull getPatientFull(ResultSet resultSet) throws SQLException {
         PatientFull patient = new PatientFull();
-        LOG.info("@@@@@ getting full patient: " + resultSet.getString("id"));
 
         patient
                 .setId(resultSet.getString("id"))

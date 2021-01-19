@@ -15,7 +15,6 @@ public class PractitionerRole {
     private static final Logger LOG = LoggerFactory.getLogger(PractitionerRole.class);
 
     public static org.hl7.fhir.dstu3.model.PractitionerRole getPractitionerRoleResource(PractitionerFull practitionerResult) {
-        LOG.info("Entering getPractitionerRoleResource() method");
         org.hl7.fhir.dstu3.model.PractitionerRole practitionerRole = new org.hl7.fhir.dstu3.model.PractitionerRole();
 
         UUID uuid = UUID.randomUUID();

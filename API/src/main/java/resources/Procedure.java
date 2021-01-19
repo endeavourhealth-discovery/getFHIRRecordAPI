@@ -17,7 +17,6 @@ public class Procedure {
     private static final Logger LOG = LoggerFactory.getLogger(Procedure.class);
 
     public static org.hl7.fhir.dstu3.model.Procedure getProcedureResource(ProcedureFull procedureFull) {
-        LOG.info("Entering getProcedureResource() method");
         org.hl7.fhir.dstu3.model.Procedure procedure = new org.hl7.fhir.dstu3.model.Procedure();
 
         UUID uuid = UUID.randomUUID();

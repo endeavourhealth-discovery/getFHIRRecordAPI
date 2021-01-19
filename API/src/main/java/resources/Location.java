@@ -17,7 +17,6 @@ public class Location {
     private static final Logger LOG = LoggerFactory.getLogger(Location.class);
 
     public static org.hl7.fhir.dstu3.model.Location getLocationResource(LocationFull locationFull) {
-        LOG.info("Entering getLocationResource() method");
         org.hl7.fhir.dstu3.model.Location location = new org.hl7.fhir.dstu3.model.Location();
 
         UUID uuid = UUID.randomUUID();

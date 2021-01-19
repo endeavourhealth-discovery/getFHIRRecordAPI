@@ -119,7 +119,6 @@ public class FhirApi {
 
             jsonTestNHSIdMappings = ConfigManager.getConfigurationAsJson(CONFIG_ID_RUN_MODE);
             runMode = jsonTestNHSIdMappings.get("mode").asText();
-            LOG.info("@@@@@ Run Mode:" + runMode);
         } catch (Exception e) {
             LOG.error(e.getMessage());
         }
@@ -168,32 +167,23 @@ public class FhirApi {
         PatientFull patient = null;
         observationIds = new HashSet<>();
 
-
-        LOG.info("@@@@@ getting fhirBundle");
-
         try (JDBCDAL viewerDAL = new JDBCDAL()) {
 
-
-            LOG.info("@@@@@ got DAL");
             if (id > 0 || !dateOfBirth.equals("0"))
                 patient = viewerDAL.getPatientFull(id, nhsNumber, dateOfBirth, activePatientsOnly);
             else
                 patient = viewerDAL.getPatientFull(nhsNumber, activePatientsOnly);
-                LOG.info("@@@ got the whole patient");
             //hide  Demographic details for run mode = test
             if (runMode != null && runMode.equals(CONFIG_ID_RUN_MODE_TEST)) {
               hideDemographicInfo(patient);
             }
 
             if (patient == null) {
-                LOG.info("@@@ patient not found");
                 throw new ResourceNotFoundException("Patient resource with id = '" + nhsNumber + "' not found");
             }
 
-            LOG.info("@@@ patient not null");
             patientResource = Patient.getPatientResource(patient, viewerDAL);
 
-            LOG.info("@@@ patient got resource");
             bundle = new Bundle();
             bundle.setType(Bundle.BundleType.COLLECTION);
             Meta meta = new Meta();
@@ -225,12 +215,10 @@ public class FhirApi {
             }
             setCoding(patientMap);
 
-            LOG.info("@@@ patient coding set");
             addFhirAllergiesToBundle(patientIds,viewerDAL);
 
             // Adding MedicationStatement, MedicationRequest, Medication & MedicationStatementList to bundle
             addFhirMedicationStatementToBundle(patientIds,viewerDAL);
-            LOG.info("@@@ patient got meds");
 
             addFhirAppointmentToBundle(patientIds,viewerDAL);
 
@@ -256,7 +244,6 @@ public class FhirApi {
 
             addToBundle("organizations");
 
-            LOG.info("@@@ patient got everything ");
 
 
             if (!practitionerAndRoleResource.isEmpty()) {
