@@ -232,10 +232,9 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "coalesce(cat.description, '') as category," +
                 "coalesce(o.result_value_units,'') as resultValueUnits from observation o " +
                 "join concept c on o.non_core_concept_id = c.dbid " +
-                "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
+                "left outer join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
                 "left outer join code_category cat on cat.id = ccv.code_category_id "+
-                "where o.patient_id in (" + StringUtils.join(id, ',') + ") " +
-                "and o.is_problem = 0";
+                "where o.patient_id in (" + StringUtils.join(id, ',') + ") ";
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
