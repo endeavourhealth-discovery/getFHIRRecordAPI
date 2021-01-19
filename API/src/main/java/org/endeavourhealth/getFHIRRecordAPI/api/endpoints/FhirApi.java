@@ -101,7 +101,6 @@ public class FhirApi {
                     json = getFhirBundle(0, nhsNumber, dateOfBirth, onlyDemographics, activePatientsOnly);
 
                 } catch (Exception e) {
-                    LOG.info(e.toString() );
                     throw new ResourceNotFoundException("Resource error:" + e);
                 }
                 return json;
