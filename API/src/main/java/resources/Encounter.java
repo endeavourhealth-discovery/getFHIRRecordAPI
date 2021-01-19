@@ -27,16 +27,19 @@ public class Encounter {
         }
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        Date clinicalEffDt = formatter.parse(encounterFull.getDate());
 
-        if(clinicalEffDt != null) {
-            Period period = new Period();
-            period.setStart(clinicalEffDt);
-            if(encounterFull.getEndDate() != null){
-                Date endDate = formatter.parse(encounterFull.getEndDate());
-                period.setEnd(endDate);
+        if(encounterFull.getDate() != null) {
+            Date clinicalEffDt = formatter.parse(encounterFull.getDate());
+
+            if (clinicalEffDt != null) {
+                Period period = new Period();
+                period.setStart(clinicalEffDt);
+                if (encounterFull.getEndDate() != null) {
+                    Date endDate = formatter.parse(encounterFull.getEndDate());
+                    period.setEnd(endDate);
+                }
+                encounter.setPeriod(period);
             }
-            encounter.setPeriod(period);
         }
 
         encounter.addIdentifier()
