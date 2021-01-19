@@ -21,4 +21,8 @@ CREATE TABLE code_category_values
     PRIMARY KEY code_category_id_concept_dbid_pk (code_category_id, concept_dbid)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
+
+CREATE INDEX ix_code_category_value_concept_dbid
+  ON code_category_values
+  (concept_dbid);
   

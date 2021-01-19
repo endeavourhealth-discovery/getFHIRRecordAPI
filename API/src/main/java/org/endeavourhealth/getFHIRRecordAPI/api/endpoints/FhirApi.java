@@ -283,6 +283,7 @@ public class FhirApi {
         patient.setAdduse(murphString);
         patient.setCity(murphString);
         patient.setDod(new Date("09-Sep-9999"));
+        patient.setGender("unknown");
 
         return patient;
 
