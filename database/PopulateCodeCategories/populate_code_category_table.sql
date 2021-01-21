@@ -48,5 +48,6 @@ values
 (45, 'Religion'),
 (46, 'Symptoms and Findings'),
 (47, 'Trade/Branch'),
-(48, 'Main language');
+(48, 'Main language'),
+(49, 'vital-signs');
 
