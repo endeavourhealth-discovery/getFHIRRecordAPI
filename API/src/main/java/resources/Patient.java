@@ -16,7 +16,7 @@ public class Patient {
 
 	public static org.hl7.fhir.dstu3.model.Patient getPatientResource(PatientFull patientResult, JDBCDAL JDBCDAL) throws Exception {
 		String id = replaceNull(patientResult.getId());
-		List<TelecomFull> telecomFullList = JDBCDAL.getTelecomFull(Integer.parseInt(id));
+		List<TelecomFull> telecomFullList = patientResult.getTelecomFullList();
 		String nhsNumber = replaceNull(patientResult.getNhsNumber());
 		String gender = replaceNull(patientResult.getGender());
 		String lastname = replaceNull(patientResult.getLastname());
