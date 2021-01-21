@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PatientFull {
@@ -33,6 +35,7 @@ public class PatientFull {
     private String registrationType;
     private String registrationStatusValue;
     private String registrationEndDate;
+    private List<TelecomFull> telecomFullList = new ArrayList<TelecomFull>();
 
     public String getId() {
         return id;
@@ -301,4 +304,13 @@ public class PatientFull {
 
         return titleCase.toString();
     }
+
+    public List<TelecomFull> getTelecomFullList() {
+        return telecomFullList;
+    }
+
+    public void setTelecomFullList(List<TelecomFull> telecomFullList) {
+        this.telecomFullList = telecomFullList;
+    }
+
 }
