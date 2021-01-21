@@ -545,6 +545,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
                 "where patient_id in (" + StringUtils.join(patientIds, ',') + ") " + "and ccv.code_category_id in (33, 38) ";
 
+        LOG.info(sql);
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next())
