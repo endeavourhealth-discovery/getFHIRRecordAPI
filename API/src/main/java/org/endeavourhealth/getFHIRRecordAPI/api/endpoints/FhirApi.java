@@ -306,7 +306,7 @@ public class FhirApi {
         patient.setAdduse(morphString);
         patient.setCity(morphString);
         patient.setDod(new Date("09-Sep-9999"));
-        patient.setGender("unknown");
+        patient.setGender("Unknown");
 
         patient.setEthnicDescription(morphString);
 
