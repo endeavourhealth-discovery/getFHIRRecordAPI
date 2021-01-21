@@ -54,6 +54,7 @@ public class FhirApi {
     String originalNHSNumber = null;
     String runMode = null;
     Set<String> observationIds;
+    Set<String> pathAndRadObservationIds;
 
     Bundle bundle;
     org.hl7.fhir.dstu3.model.Patient patientResource;
@@ -166,6 +167,7 @@ public class FhirApi {
         episodeOfCareResourceMap= new HashMap<>();
         PatientFull patient = null;
         observationIds = new HashSet<>();
+        pathAndRadObservationIds = new HashSet<>();
 
         try (JDBCDAL viewerDAL = new JDBCDAL()) {
 
@@ -215,6 +217,9 @@ public class FhirApi {
                 patientIds = Arrays.asList(patientId);
             }
             setCoding(patientMap);
+
+            // get pathology and radiology observations so we can filter these out
+            pathAndRadObservationIds = viewerDAL.getPathologyAndRadiologyList(patientIds);
 
             addFhirAllergiesToBundle(patientIds,viewerDAL);
 
@@ -344,7 +349,7 @@ public class FhirApi {
 
             for (ConditionFull conditionFull : conditions) {
                 String observationId = String.valueOf(conditionFull.getId());
-                if(!observationIds.contains(observationId)) {
+                if(!observationIds.contains(observationId) && !pathAndRadObservationIds.contains(observationId)) {
                     observationIds.add(observationId);
                     org.hl7.fhir.dstu3.model.Condition conditionFhirObj = Condition.getConditionResource(conditionFull, viewerDAL);
                     conditionFhirObj.getMeta().addTag(patientCodingMap.get(conditionFull.getPatientId()));
@@ -447,7 +452,7 @@ public class FhirApi {
             if (!observationFullList.isEmpty()) {
                 for (ObservationFull observationFull : observationFullList) {
                     String observationId = String.valueOf(observationFull.getId());
-                    if(!observationIds.contains(observationId)) {
+                    if(!observationIds.contains(observationId) && !pathAndRadObservationIds.contains(observationId)) {
                         observationIds.add(observationId);
                         Observation observationFhir = new Observation(observationFull, viewerDAL);
                         org.hl7.fhir.dstu3.model.Observation observationResource = observationFhir.getObservationResource();
@@ -476,7 +481,7 @@ public class FhirApi {
             if (!diagnosticReportFullList.isEmpty()) {
                 for (DiagnosticReportFull diagnosticReportFull : diagnosticReportFullList) {
                     String observationId = String.valueOf(diagnosticReportFull.getId());
-                    if(!observationIds.contains(observationId)) {
+                    if(!observationIds.contains(observationId) && !pathAndRadObservationIds.contains(observationId)) {
                         observationIds.add(observationId);
                         DiagnosticReport diagnosticFhir = new DiagnosticReport(diagnosticReportFull, viewerDAL);
                         org.hl7.fhir.dstu3.model.DiagnosticReport observationResource = diagnosticFhir.getDiagnosticReport();
@@ -660,7 +665,7 @@ public class FhirApi {
         if (!procedureFullList.isEmpty()) {
 
             for (ProcedureFull procedureFull : procedureFullList) {
-                if(!observationIds.contains(procedureFull.getId())) {
+                if(!observationIds.contains(procedureFull.getId()) && !pathAndRadObservationIds.contains(procedureFull.getId())) {
                     observationIds.add(procedureFull.getId());
                     org.hl7.fhir.dstu3.model.Procedure procedureResource = Procedure.getProcedureResource(procedureFull);
                     procedureResource.getMeta().addTag(patientCodingMap.get((procedureFull.getPatientId())));
@@ -684,7 +689,7 @@ public class FhirApi {
 
             for (ImmunizationFull immunizationFull : immunizationfullList) {
                 String observationId = String.valueOf(immunizationFull.getId());
-                if (!observationIds.contains(observationId)) {
+                if (!observationIds.contains(observationId) && !pathAndRadObservationIds.contains(observationId)) {
                     observationIds.add(observationId);
                     org.hl7.fhir.dstu3.model.Immunization immunizationObj = Immunization.getImmunizationResource(immunizationFull);
                     immunizationObj.getMeta().addTag(patientCodingMap.get((immunizationFull.getPatientId())));
@@ -770,7 +775,7 @@ public class FhirApi {
 
             for (FamilyMemberHistoryFull familyMemberHistoryFull : familyMemberHistoryList) {
                 String observationId = String.valueOf(familyMemberHistoryFull.getId());
-                if(!observationIds.contains(observationId)) {
+                if(!observationIds.contains(observationId) && !pathAndRadObservationIds.contains(observationId)) {
                     observationIds.add(observationId);
                     familyMemberHistoryResource = familyMemberHistory.getFamilyMemberHistoryResource(familyMemberHistoryFull);
                     familyMemberHistoryResource.getMeta().addTag(patientCodingMap.get((familyMemberHistoryFull.getPatientId())));

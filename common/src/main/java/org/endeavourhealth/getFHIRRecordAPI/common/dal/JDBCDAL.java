@@ -8,10 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class JDBCDAL extends BaseJDBCDAL {
     private static final Logger LOG = LoggerFactory.getLogger(JDBCDAL.class);
@@ -533,6 +530,28 @@ public class JDBCDAL extends BaseJDBCDAL {
         }
 
         return allergiesFullList;
+    }
+
+    /* NWL want pathology and radiology data from GP source systems removed from the extract. Once we get HL7 data in
+        we need to ensure that we are sending the data from hospitals.  This will be identified by having an entry in
+        observation_additional with the requesting GP organisation specified
+    */
+    public Set<String> getPathologyAndRadiologyList(List<Long> patientIds) throws Exception {
+
+        Set<String> pathAndRadObservationIds = new HashSet<>();
+        String sql = "SELECT " +
+                "coalesce(o.id, '') as id," +
+                "FROM observation o " +
+                "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
+                "where patient_id in (" + StringUtils.join(patientIds, ',') + ") " + "and ccv.code_category_id in (33, 38) ";
+
+        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next())
+                    pathAndRadObservationIds.add(resultSet.getString("id"));
+            }
+        }
+        return pathAndRadObservationIds;
     }
 
     public List<AllergyFull> getAllergyFullListFromObservation(List<Long> patientids) throws Exception {
