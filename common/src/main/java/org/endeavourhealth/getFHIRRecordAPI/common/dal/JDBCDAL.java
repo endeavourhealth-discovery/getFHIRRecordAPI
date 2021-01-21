@@ -540,7 +540,7 @@ public class JDBCDAL extends BaseJDBCDAL {
 
         Set<String> pathAndRadObservationIds = new HashSet<>();
         String sql = "SELECT " +
-                "coalesce(o.id, '') as id," +
+                "coalesce(o.id, '') as id" +
                 "FROM observation o " +
                 "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
                 "where patient_id in (" + StringUtils.join(patientIds, ',') + ") " + "and ccv.code_category_id in (33, 38) ";
