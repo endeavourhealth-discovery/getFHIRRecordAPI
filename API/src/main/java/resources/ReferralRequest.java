@@ -23,7 +23,6 @@ public class ReferralRequest {
 
         if(null!=referralRequestFull.getPriority()) {
 
-            LOG.info(refId + " : setting priority : " + referralRequestFull.getPriority());
             try {
                 referralRequest.setPriority(org.hl7.fhir.dstu3.model.ReferralRequest.ReferralPriority.fromCode(referralRequestFull.getPriority()));
             } catch (Exception e) {
@@ -33,7 +32,6 @@ public class ReferralRequest {
 
         if(null!=referralRequestFull.getIntent()) {
 
-            LOG.info(refId + " : setting intent : " + referralRequestFull.getIntent());
             try {
                 referralRequest.setIntent(org.hl7.fhir.dstu3.model.ReferralRequest.ReferralCategory.fromCode(referralRequestFull.getIntent()));
             } catch (Exception e) {
@@ -42,14 +40,11 @@ public class ReferralRequest {
             }
         }
 
-        LOG.info(refId + " : setting date");
-
         if(null!=referralRequestFull.getClinicalEffectiveDate())
         {
             referralRequest.setAuthoredOn(referralRequestFull.getClinicalEffectiveDate());
         }
 
-        LOG.info(refId + " : setting type");
         if(null!=referralRequestFull.getTypeCode())
         {
 
@@ -61,7 +56,6 @@ public class ReferralRequest {
             referralRequest.setReasonCode(Arrays.asList(codeableConcept.addCoding(coding)));
         }
 
-        LOG.info(refId + " : setting specialty");
         if(null!=referralRequestFull.getSpecialityCode())
         {
 

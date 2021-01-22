@@ -25,7 +25,6 @@ public class PractitionerRole {
                 .setValue(String.valueOf(practitionerResult.getId()))
                 .setSystem(ResourceConstants.SYSTEM_ID);
 
-        LOG.info(String.valueOf(practitionerResult.getId()) + " : setting code");
         CodeableConcept code = new CodeableConcept();
         code.addCoding()
                 .setCode(practitionerResult.getRoleCode())
@@ -33,7 +32,6 @@ public class PractitionerRole {
                 .setSystem(PRACTITIONER_ROLE_SYSTEM);
         practitionerRole.addCode(code);
 
-        LOG.info(String.valueOf(practitionerResult.getId()) + " : code set");
         return practitionerRole;
     }
 }
