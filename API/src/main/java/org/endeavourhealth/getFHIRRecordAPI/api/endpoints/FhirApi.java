@@ -547,6 +547,7 @@ public class FhirApi {
                 List<MedicationOrderFull> medicationRequestList = null;
                 org.hl7.fhir.dstu3.model.MedicationRequest medicationRequestResource = null;
 
+                LOG.info("processing med request : " + String.valueOf(medicationStatementFull.getId()));
                 medicationRequestList = viewerDAL.getMedicationOrderFullList(medicationStatementFull.getId(),patientIds );
                 if (medicationRequestList != null || medicationRequestList.size() > 0) {
 
@@ -555,6 +556,8 @@ public class FhirApi {
                         medicationRequestResource = MedicationStatement.getMedicationRequestResource(medicationOrderFull);
                         medicationRequestResource.setSubject(new Reference(patientResource));
                         medicationRequestResource.setMedication(new Reference(medicationResource));
+
+                        LOG.info("processing practitioner : " + String.valueOf(medicationStatementFull.getId()));
                         medicationRequestResource.setRecorder(new Reference(getPractitionerRoleResource(medicationOrderFull.getPractitionerId(), medicationOrderFull.getOrgId(),viewerDAL)));
 
                         medicationRequestResource.addIdentifier()
