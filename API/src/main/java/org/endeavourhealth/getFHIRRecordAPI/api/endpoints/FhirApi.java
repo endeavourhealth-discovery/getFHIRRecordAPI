@@ -351,6 +351,7 @@ public class FhirApi {
     }
 
     private org.hl7.fhir.dstu3.model.Practitioner getPractitionerResource(long practitionerId,JDBCDAL viewerDAL) throws Exception {
+        LOG.info(String.valueOf(practitionerId) + " : getting practitioner resource method");
         if (!practitionerAndRoleResource.containsKey(practitionerId)) {
             LOG.info(String.valueOf(practitionerId) + " : getting practitioner from DB");
             PractitionerFull practitionerResult = viewerDAL.getPractitionerFull(practitionerId);
@@ -890,7 +891,7 @@ public class FhirApi {
 
                     LOG.info(referralRequestFull.getPractitionerId() + " : practitioner not null");
 
-                    org.hl7.fhir.dstu3.model.Practitioner practitioner = getPractitionerResource( Integer.parseInt(referralRequestFull.getPractitionerId()),viewerDAL);
+                    org.hl7.fhir.dstu3.model.Practitioner practitioner = getPractitionerResource( Long.parseLong(referralRequestFull.getPractitionerId()),viewerDAL);
                     if (practitioner != null) {
 
                         LOG.info(String.valueOf(referralRequestFull.getId() + " : setting requestor"));
