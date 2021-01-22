@@ -24,12 +24,14 @@ public class PractitionerRole {
         practitionerRole.addIdentifier()
                 .setValue(String.valueOf(practitionerResult.getId()))
                 .setSystem(ResourceConstants.SYSTEM_ID);
-        CodeableConcept code = new CodeableConcept();
-        code.addCoding()
-                .setCode(practitionerResult.getRoleCode())
-                .setDisplay(practitionerResult.getRoleDesc())
-                .setSystem(PRACTITIONER_ROLE_SYSTEM);
-        practitionerRole.addCode(code);
+        if (practitionerResult.getRoleCode() != null) {
+            CodeableConcept code = new CodeableConcept();
+            code.addCoding()
+                    .setCode(practitionerResult.getRoleCode())
+                    .setDisplay(practitionerResult.getRoleDesc())
+                    .setSystem(PRACTITIONER_ROLE_SYSTEM);
+            practitionerRole.addCode(code);
+        }
 
         return practitionerRole;
     }
