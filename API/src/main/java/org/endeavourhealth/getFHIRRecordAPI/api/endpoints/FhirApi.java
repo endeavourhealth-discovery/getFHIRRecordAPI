@@ -73,13 +73,14 @@ public class FhirApi {
                 boolean onlyDemographics = false;
                 boolean activePatientsOnly = false;
 
+                //get run mode
+                runMode = getRunMode();
+
                 for (Parameter param : parameters) {
                     String paramName = param.getName();
                     if (paramName.equals("patientNHSNumber")) {
                         if(nhsNumber.equals("0")) {
                             nhsNumber = param.getValueIdentifier().getValue();
-                            //get run mode
-                            runMode = getRunMode();
                             //test mode
                             if (runMode != null && runMode.equals(CONFIG_ID_RUN_MODE_TEST)) {
                                 originalNHSNumber = nhsNumber;
@@ -87,7 +88,9 @@ public class FhirApi {
                             }
                         }
                     } else if (paramName.equals("patientDOB")) {
+                        if (runMode != null && !runMode.equals(CONFIG_ID_RUN_MODE_TEST)) {
                             dateOfBirth = param.getValueIdentifier().getValue();
+                        }
                     } else if (paramName.equals("demographicsOnly")) {
                         if (param.getPart().get(0) != null && param.getPart().get(0).getValueBoolean()) {
                             onlyDemographics = true;
