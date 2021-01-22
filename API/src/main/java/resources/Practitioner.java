@@ -39,10 +39,14 @@ public class Practitioner {
                 .setValue(String.valueOf(practitionerResult.getId()))
                 .setSystem(ResourceConstants.SYSTEM_ID);
 
-        if (ArrayUtils.isNotEmpty(nameList) && nameList.length == 3) {
+        if (ArrayUtils.isNotEmpty(nameList)) {
             name.setFamily(nameList[0]);
-            name.setGiven(Arrays.asList(new StringType(nameList[1])));
-            name.setPrefix(Arrays.asList(new StringType(nameList[2])));
+            if (nameList.length > 1) {
+                name.setGiven(Arrays.asList(new StringType(nameList[1])));
+            }
+            if (nameList.length >2 ) {
+                name.setPrefix(Arrays.asList(new StringType(nameList[2])));
+            }
         } else {
             LOG.error("Something wrong in receiving Practitioner name details" + practitionerResult.getName());
         }
