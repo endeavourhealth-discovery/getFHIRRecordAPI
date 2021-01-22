@@ -42,6 +42,7 @@ import java.util.stream.Stream;
 
 public class FhirApi {
     private static final Logger LOG = LoggerFactory.getLogger(FhirApi.class);
+    private static final String APP_ID_FHIR_RECORD_API = "fhir-record-api";
     private static final String CONFIG_ID_RUN_MODE = "run_mode";
     private static final String CONFIG_ID_RUN_MODE_TEST = "test";
 
@@ -55,6 +56,7 @@ public class FhirApi {
     String runMode = null;
     Set<String> observationIds;
     Set<String> pathAndRadObservationIds;
+    String morphString = "XXXX";
 
     Bundle bundle;
     org.hl7.fhir.dstu3.model.Patient patientResource;
@@ -117,8 +119,7 @@ public class FhirApi {
      */
     private String getRunMode() {
         try {
-
-            jsonTestNHSIdMappings = ConfigManager.getConfigurationAsJson(CONFIG_ID_RUN_MODE);
+            jsonTestNHSIdMappings = ConfigManager.getConfigurationAsJson(CONFIG_ID_RUN_MODE, APP_ID_FHIR_RECORD_API);
             runMode = jsonTestNHSIdMappings.get("mode").asText();
         } catch (Exception e) {
             LOG.error(e.getMessage());
@@ -175,14 +176,18 @@ public class FhirApi {
                 patient = viewerDAL.getPatientFull(id, nhsNumber, dateOfBirth, activePatientsOnly);
             else
                 patient = viewerDAL.getPatientFull(nhsNumber, activePatientsOnly);
-            //hide  Demographic details for run mode = test
-            if (runMode != null && runMode.equals(CONFIG_ID_RUN_MODE_TEST)) {
-              hideDemographicInfo(patient);
-            }
 
             LOG.info("Got Patient");
             if (patient == null) {
                 throw new ResourceNotFoundException("Patient resource with id = '" + nhsNumber + "' not found");
+            }
+
+            List<TelecomFull> telecomFullList = viewerDAL.getTelecomFull(Integer.parseInt(patient.getId()));
+            patient.setTelecomFullList(telecomFullList);
+
+            //hide  Demographic details for run mode = test
+            if (runMode != null && runMode.equals(CONFIG_ID_RUN_MODE_TEST)) {
+              hideDemographicInfo(patient);
             }
 
             patientResource = Patient.getPatientResource(patient, viewerDAL);
@@ -288,24 +293,38 @@ public class FhirApi {
      * Replace demographic info with xxxx and dob/dod with 09-Sep-9999
      */
     private PatientFull hideDemographicInfo( PatientFull patient) {
-        String murphString = "XXXX";
 
-        patient.setFirstname(murphString);
-        patient.setLastname(murphString);
+        patient.setFirstname(morphString);
+        patient.setLastname(morphString);
         patient.setDob(new Date("09-Sep-9999"));
-        patient.setAdd1(murphString);
-        patient.setAdd2(murphString);
-        patient.setAdd3(murphString);
-        patient.setAdd4(murphString);
-        patient.setPostcode(murphString);
+        patient.setAdd1(morphString);
+        patient.setAdd2(morphString);
+        patient.setAdd3(morphString);
+        patient.setAdd4(morphString);
+        patient.setPostcode(morphString);
         patient.setNhsNumber(originalNHSNumber);
-        patient.setAdduse(murphString);
-        patient.setCity(murphString);
+        patient.setAdduse(morphString);
+        patient.setCity(morphString);
         patient.setDod(new Date("09-Sep-9999"));
         patient.setGender("Unknown");
 
+        patient.setEthnicDescription(morphString);
+
+        if(patient.getTelecomFullList() != null && patient.getTelecomFullList().size() > 0) {
+            morphContactDetail(patient);
+        }
+
         return patient;
 
+    }
+    /*
+     * Morph contact detail
+     */
+    private PatientFull morphContactDetail( PatientFull patient) {
+        for(TelecomFull telecomFull : patient.getTelecomFullList()) {
+            telecomFull.setValue(morphString);
+        }
+        return patient;
     }
 
     private org.hl7.fhir.dstu3.model.PractitionerRole getPractitionerRoleResource(Long practitionerId, Long organizationID,JDBCDAL viewerDAL) throws Exception {
