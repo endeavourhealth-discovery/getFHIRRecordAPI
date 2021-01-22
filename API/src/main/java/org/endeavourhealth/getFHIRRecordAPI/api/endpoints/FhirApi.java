@@ -201,7 +201,10 @@ public class FhirApi {
                 patientResource.setManagingOrganization(new Reference(getOrganizationFhirObj(Integer.parseInt(patient.getOrglocation()), viewerDAL)));
             }
             if (patient.getPractitionerId() != 0) {
-                patientResource.setGeneralPractitioner(Arrays.asList(new Reference(getPractitionerResource(patient.getPractitionerId(),viewerDAL))));
+                org.hl7.fhir.dstu3.model.Practitioner practitioner = getPractitionerResource(patient.getPractitionerId(),viewerDAL);
+                if (practitioner != null) {
+                    patientResource.setGeneralPractitioner(Arrays.asList(new Reference(practitioner)));
+                }
             }
             bundle.addEntry().setResource(patientResource);
 
@@ -332,6 +335,9 @@ public class FhirApi {
         }
 
         PractitionerFull practitionerResult = viewerDAL.getPractitionerFull(practitionerId);
+        if (practitionerResult == null) {
+            return null;
+        }
         org.hl7.fhir.dstu3.model.Practitioner practitionerResource = Practitioner.getPractitionerResource(practitionerResult);
 
         org.hl7.fhir.dstu3.model.PractitionerRole practitionerRoleResource = PractitionerRole.getPractitionerRoleResource(practitionerResult);
@@ -346,6 +352,9 @@ public class FhirApi {
             PractitionerFull practitionerResult = viewerDAL.getPractitionerFull(practitionerId);
             org.hl7.fhir.dstu3.model.Practitioner practitionerResource = Practitioner.getPractitionerResource(practitionerResult);
 
+            if (practitionerResource == null) {
+                return null;
+            }
             org.hl7.fhir.dstu3.model.PractitionerRole practitionerRoleResource = PractitionerRole.getPractitionerRoleResource(practitionerResult);
             practitionerRoleResource.setPractitioner(new Reference(practitionerResource));
             practitionerAndRoleResource.put(practitionerId, Arrays.asList(practitionerResource, practitionerRoleResource));
@@ -394,7 +403,10 @@ public class FhirApi {
                     episodeOfCare.setManagingOrganization(new Reference(getOrganizationFhirObj(episodeOfCareFullList.get(0).getOrganizationId(),viewerDAL)));
                 }
                 if (episodeOfCareFullList.get(0).getPractitionerId() != 0) {
-                    episodeOfCare.setCareManager(new Reference(getPractitionerResource(episodeOfCareFullList.get(0).getPractitionerId(),viewerDAL)));
+                    org.hl7.fhir.dstu3.model.Practitioner practitioner = getPractitionerResource(episodeOfCareFullList.get(0).getPractitionerId(),viewerDAL);
+                    if (practitioner != null) {
+                        episodeOfCare.setCareManager(new Reference(practitioner));
+                    }
                 }
                 episodeOfCareResourceMap.put(getEpisodeOfCareResource(episodeOfCareFullList), episodeOfCare);
                 bundle.addEntry().setResource(episodeOfCare);
@@ -450,7 +462,12 @@ public class FhirApi {
                 org.hl7.fhir.dstu3.model.AllergyIntolerance allergyFhirObj = AllergyIntolerance.getAllergyIntoleranceResource(allegyFull);
                 allergyFhirObj.getMeta().addTag(patientCodingMap.get((allegyFull.getPatientId())));
                 Long organizationID = new Long(allegyFull.getOrganizationId());
-                allergyFhirObj.setAsserter(new Reference(getPractitionerRoleResource(new Long(allegyFull.getPractitionerId()), organizationID,viewerDAL)));
+
+                org.hl7.fhir.dstu3.model.PractitionerRole practitionerRole = getPractitionerRoleResource(allegyFull.getPractitionerId(), organizationID, viewerDAL);
+                if (practitionerRole != null) {
+                    allergyFhirObj.setAsserter(new Reference(practitionerRole));
+                }
+
 
                 bundle.addEntry().setResource(allergyFhirObj);
                 fihrAllergyListObj.addEntry().setItem(new Reference(allergyFhirObj));
@@ -475,7 +492,11 @@ public class FhirApi {
                         Observation observationFhir = new Observation(observationFull, viewerDAL);
                         org.hl7.fhir.dstu3.model.Observation observationResource = observationFhir.getObservationResource();
                         observationResource.getMeta().addTag(patientCodingMap.get((observationFull.getPatientId())));
-                        observationResource.setPerformer(Arrays.asList(new Reference(getPractitionerRoleResource(new Long(observationFull.getPractitionerId()), observationFull.getOrganizationId(), viewerDAL))));
+
+                        org.hl7.fhir.dstu3.model.PractitionerRole practitionerRole = getPractitionerRoleResource(observationFull.getPractitionerId(), observationFull.getOrganizationId(), viewerDAL);
+                        if (practitionerRole != null) {
+                            observationResource.setPerformer(Arrays.asList(new Reference(practitionerRole)));
+                        }
                         observationResource.setSubject(new Reference(patientResource));
                         if (observationFull.getEncounterId() != 0) {
                             observationResource.setContext(new Reference(getEncounterFhirObj(observationFull.getEncounterId(), viewerDAL)));
@@ -557,9 +578,11 @@ public class FhirApi {
                         medicationRequestResource.setSubject(new Reference(patientResource));
                         medicationRequestResource.setMedication(new Reference(medicationResource));
 
-                        LOG.info("processing practitioner : " + String.valueOf(medicationStatementFull.getId()));
-                        medicationRequestResource.setRecorder(new Reference(getPractitionerRoleResource(medicationOrderFull.getPractitionerId(), medicationOrderFull.getOrgId(),viewerDAL)));
 
+                        org.hl7.fhir.dstu3.model.PractitionerRole practitionerRole = getPractitionerRoleResource(medicationOrderFull.getPractitionerId(), medicationOrderFull.getOrgId(), viewerDAL);
+                        if (practitionerRole != null) {
+                            medicationRequestResource.setRecorder(new Reference(practitionerRole));
+                        }
                         medicationRequestResource.addIdentifier()
                                 .setValue(String.valueOf(medicationOrderFull.getId()))
                                 .setSystem(ResourceConstants.SYSTEM_ID);
@@ -636,8 +659,12 @@ public class FhirApi {
                             .setDisplay("primary performer")
                             .setSystem("http://hl7.org/fhir/ValueSet/encounter-participant-type");
                     coding.add(code);
-                   epc.setType(coding);
-                   epc.setIndividual(new Reference(getPractitionerRoleResource(encounterFull.getPractitionerId(), encounterFull.getOrganizationId(),viewerDAL)));
+                    epc.setType(coding);
+
+                    org.hl7.fhir.dstu3.model.PractitionerRole practitionerRole = getPractitionerRoleResource(encounterFull.getPractitionerId(), encounterFull.getOrganizationId(), viewerDAL);
+                    if (practitionerRole != null) {
+                        epc.setIndividual(new Reference(practitionerRole));
+                    }
                    encounterObj.getParticipant().add(epc);
 
                 }
@@ -691,8 +718,11 @@ public class FhirApi {
                     observationIds.add(procedureFull.getId());
                     org.hl7.fhir.dstu3.model.Procedure procedureResource = Procedure.getProcedureResource(procedureFull);
                     procedureResource.getMeta().addTag(patientCodingMap.get((procedureFull.getPatientId())));
-                    procedureResource.setPerformer(Arrays.asList(new org.hl7.fhir.dstu3.model.Procedure.ProcedurePerformerComponent(new Reference
-                            (getPractitionerRoleResource(new Long(procedureFull.getPractitionerId()), procedureFull.getOrganizationId(), viewerDAL)))));
+
+                    org.hl7.fhir.dstu3.model.PractitionerRole practitionerRole = getPractitionerRoleResource(procedureFull.getPractitionerId(), procedureFull.getOrganizationId(), viewerDAL);
+                    if (practitionerRole != null) {
+                        procedureResource.setPerformer(Arrays.asList(new org.hl7.fhir.dstu3.model.Procedure.ProcedurePerformerComponent(new Reference(practitionerRole))));
+                    }
                     procedureResource.setSubject(new Reference(patientResource));
                     bundle.addEntry().setResource(procedureResource);
                 }
@@ -718,8 +748,12 @@ public class FhirApi {
                     immunizationObj.setPatient(new Reference(patientResource));
                     if (immunizationFull.getEncounterID().trim().length() > 0)
                         immunizationObj.setEncounter(new Reference(getEncounterFhirObj(Long.parseLong(immunizationFull.getEncounterID()), viewerDAL)));
-                    if (immunizationFull.getPractitionerID().trim().length() > 0)
-                        immunizationObj.addPractitioner().setActor(new Reference(getPractitionerResource(Integer.parseInt(immunizationFull.getPractitionerID()), viewerDAL)));
+                    if (immunizationFull.getPractitionerID().trim().length() > 0) {
+                        org.hl7.fhir.dstu3.model.Practitioner practitioner = getPractitionerResource(Integer.parseInt(immunizationFull.getPractitionerID()), viewerDAL);
+                        if (practitioner != null) {
+                            immunizationObj.addPractitioner().setActor(new Reference(practitioner));
+                        }
+                    }
                     bundle.addEntry().setResource(immunizationObj);
                 }
                 }
@@ -756,12 +790,21 @@ public class FhirApi {
                             organizationResource.setDisplay("Organization");
                             actorList.add(organizationResource);
                             if (appointmentFull.getPractitionerId()!=0) {
-                                Reference practitionerRoleReference = new Reference(getPractitionerRoleResource(appointmentFull.getPractitionerId(), appointmentFull.getOrgId(),viewerDAL));
-                                practitionerRoleReference.setDisplay("PractitionerRole");
-                                actorList.add(practitionerRoleReference);
-                                Reference practitionerReference = new Reference(getPractitionerResource(appointmentFull.getPractitionerId(),viewerDAL));
-                                practitionerReference.setDisplay("Practitioner");
-                                actorList.add(practitionerReference);
+
+
+                                org.hl7.fhir.dstu3.model.PractitionerRole practitionerRole = getPractitionerRoleResource(appointmentFull.getPractitionerId(), appointmentFull.getOrgId(),viewerDAL);
+                                if (practitionerRole != null) {
+                                    Reference practitionerRoleReference = new Reference(practitionerRole);
+                                    practitionerRoleReference.setDisplay("PractitionerRole");
+                                    actorList.add(practitionerRoleReference);
+                                }
+
+                                org.hl7.fhir.dstu3.model.Practitioner practitioner = getPractitionerResource(appointmentFull.getPractitionerId(),viewerDAL);
+                                if (practitioner != null) {
+                                    Reference practitionerReference = new Reference(practitioner);
+                                    practitionerReference.setDisplay("Practitioner");
+                                    actorList.add(practitionerReference);
+                                }
                             }
                             scheduleResource.setActor(actorList);
                             bundle.addEntry().setResource(scheduleResource);
@@ -831,8 +874,12 @@ public class FhirApi {
                     recipients.add(new Reference(getOrganizationFhirObj(Integer.parseInt(referralRequestFull.getRecipientOrganizationId()),viewerDAL)));
                     referralRequest.setRecipient(recipients);
                 }
-                    if(referralRequestFull.getPractitionerId()!=null)
-                        referralRequest.setRequester(new org.hl7.fhir.dstu3.model.ReferralRequest.ReferralRequestRequesterComponent(new Reference(getPractitionerResource( Integer.parseInt(referralRequestFull.getPractitionerId()),viewerDAL))));
+                    if(referralRequestFull.getPractitionerId()!=null) {
+                        org.hl7.fhir.dstu3.model.Practitioner practitioner = getPractitionerResource(Integer.parseInt(referralRequestFull.getPractitionerId()), viewerDAL);
+                        if (practitioner != null) {
+                            referralRequest.setRequester(new org.hl7.fhir.dstu3.model.ReferralRequest.ReferralRequestRequesterComponent(new Reference(practitioner)));
+                        }
+                    }
                     bundle.addEntry().setResource(referralRequest);
             }
         }

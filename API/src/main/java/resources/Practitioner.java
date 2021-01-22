@@ -20,6 +20,9 @@ public class Practitioner {
     private static final Logger LOG = LoggerFactory.getLogger(Practitioner.class);
 
     public static org.hl7.fhir.dstu3.model.Practitioner getPractitionerResource(PractitionerFull practitionerResult) {
+        if (practitionerResult == null) {
+            return null;
+        }
         org.hl7.fhir.dstu3.model.Practitioner practitioner = new org.hl7.fhir.dstu3.model.Practitioner();
 
         UUID uuid = UUID.randomUUID();
