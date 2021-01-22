@@ -42,7 +42,6 @@ import java.util.stream.Stream;
 
 public class FhirApi {
     private static final Logger LOG = LoggerFactory.getLogger(FhirApi.class);
-    private static final String APP_ID_FHIR_RECORD_API = "fhir-record-api";
     private static final String CONFIG_ID_RUN_MODE = "run_mode";
     private static final String CONFIG_ID_RUN_MODE_TEST = "test";
 
@@ -119,7 +118,7 @@ public class FhirApi {
      */
     private String getRunMode() {
         try {
-            jsonTestNHSIdMappings = ConfigManager.getConfigurationAsJson(CONFIG_ID_RUN_MODE, APP_ID_FHIR_RECORD_API);
+            jsonTestNHSIdMappings = ConfigManager.getConfigurationAsJson(CONFIG_ID_RUN_MODE);
             runMode = jsonTestNHSIdMappings.get("mode").asText();
         } catch (Exception e) {
             LOG.error(e.getMessage());
