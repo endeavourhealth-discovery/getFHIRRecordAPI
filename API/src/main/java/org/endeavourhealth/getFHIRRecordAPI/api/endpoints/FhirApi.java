@@ -887,7 +887,10 @@ public class FhirApi {
 
                 LOG.info(String.valueOf(referralRequestFull.getId() + " : setting practitioner"));
                 if(referralRequestFull.getPractitionerId()!=null) {
-                    org.hl7.fhir.dstu3.model.Practitioner practitioner = getPractitionerResource(Integer.parseInt(referralRequestFull.getPractitionerId()), viewerDAL);
+
+                    LOG.info(referralRequestFull.getPractitionerId() + " : practitioner not null");
+
+                    org.hl7.fhir.dstu3.model.Practitioner practitioner = getPractitionerResource( Integer.parseInt(referralRequestFull.getPractitionerId()),viewerDAL);
                     if (practitioner != null) {
 
                         LOG.info(String.valueOf(referralRequestFull.getId() + " : setting requestor"));
@@ -895,7 +898,7 @@ public class FhirApi {
                     }
                 }
 
-                LOG.info(String.valueOf(referralRequestFull.getId() + " : setting resource"));
+                LOG.info(referralRequestFull.getId() + " : setting resource");
                 bundle.addEntry().setResource(referralRequest);
             }
         }
