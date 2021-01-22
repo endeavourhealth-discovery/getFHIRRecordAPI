@@ -655,8 +655,11 @@ public class FhirApi {
                 encounterObj.getMeta().addTag(patientCodingMap.get((encounterFull.getPatientId())));
                 encounterObj.setSubject(new Reference(patientResource));
                 encounterObj.setEpisodeOfCare(getEpisodeOfCareReference(encounterFull.getEpisode_of_care_id()));
+                LOG.info(encounterFull.getEncounterid() + " : processing encounter");
                 if(encounterFull.getPractitionerId()!=-1)
                 {
+
+                    LOG.info(encounterFull.getPractitionerId() + " : processing encounter practitioner");
                     org.hl7.fhir.dstu3.model.Encounter.EncounterParticipantComponent epc=new org.hl7.fhir.dstu3.model.Encounter.EncounterParticipantComponent();
                     List<CodeableConcept> coding=new ArrayList<>();
 
@@ -669,10 +672,16 @@ public class FhirApi {
                     coding.add(code);
                     epc.setType(coding);
 
+                    LOG.info(encounterFull.getPractitionerId() + " : getting role resource");
                     org.hl7.fhir.dstu3.model.PractitionerRole practitionerRole = getPractitionerRoleResource(encounterFull.getPractitionerId(), encounterFull.getOrganizationId(), viewerDAL);
+
                     if (practitionerRole != null) {
+
+                        LOG.info(encounterFull.getPractitionerId() + " : pracitioner is not null");
                         epc.setIndividual(new Reference(practitionerRole));
                     }
+
+                   LOG.info(encounterFull.getPractitionerId() + " : addint participant");
                    encounterObj.getParticipant().add(epc);
 
                 }
