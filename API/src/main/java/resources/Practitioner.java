@@ -34,24 +34,28 @@ public class Practitioner {
         practitioner.addIdentifier()
                 .setSystem(IDENTIFIER_URL);
 
-        HumanName name = practitioner.addName();
-        String[] nameList = splitName(practitionerResult.getName());
-        name.setUse(HumanName.NameUse.USUAL);
-
         practitioner.addIdentifier()
                 .setValue(String.valueOf(practitionerResult.getId()))
                 .setSystem(ResourceConstants.SYSTEM_ID);
 
-        if (ArrayUtils.isNotEmpty(nameList)) {
-            name.setFamily(nameList[0]);
-            if (nameList.length > 1) {
-                name.setGiven(Arrays.asList(new StringType(nameList[1])));
+        HumanName name = practitioner.addName();
+
+        if (practitionerResult.getName() != null) {
+            String[] nameList = splitName(practitionerResult.getName());
+            name.setUse(HumanName.NameUse.USUAL);
+
+
+            if (ArrayUtils.isNotEmpty(nameList)) {
+                name.setFamily(nameList[0]);
+                if (nameList.length > 1) {
+                    name.setGiven(Arrays.asList(new StringType(nameList[1])));
+                }
+                if (nameList.length > 2) {
+                    name.setPrefix(Arrays.asList(new StringType(nameList[2])));
+                }
+            } else {
+                LOG.error("Something wrong in receiving Practitioner name details" + practitionerResult.getName());
             }
-            if (nameList.length >2 ) {
-                name.setPrefix(Arrays.asList(new StringType(nameList[2])));
-            }
-        } else {
-            LOG.error("Something wrong in receiving Practitioner name details" + practitionerResult.getName());
         }
 
         return practitioner;
