@@ -866,22 +866,27 @@ public class FhirApi {
                 org.hl7.fhir.dstu3.model.ReferralRequest referralRequest = ReferralRequest.getReferralRequestResource(referralRequestFull);
                 referralRequest.getMeta().addTag(patientCodingMap.get((referralRequestFull.getPatientId())));
 
+                LOG.info(String.valueOf(referralRequestFull.getId() + " : patient set"));
                 referralRequest.setSubject(new Reference(patientResource));
                 referralRequest.addIdentifier()
                         .setValue(String.valueOf(referralRequestFull.getId()))
                         .setSystem(ResourceConstants.SYSTEM_ID);
+
+                LOG.info(String.valueOf(referralRequestFull.getId() + " : setting recipient"));
                 if(referralRequestFull.getRecipientOrganizationId()!=null) {
                     List<Reference> recipients=new ArrayList<>();
                     recipients.add(new Reference(getOrganizationFhirObj(Integer.parseInt(referralRequestFull.getRecipientOrganizationId()),viewerDAL)));
                     referralRequest.setRecipient(recipients);
                 }
-                    if(referralRequestFull.getPractitionerId()!=null) {
-                        org.hl7.fhir.dstu3.model.Practitioner practitioner = getPractitionerResource(Integer.parseInt(referralRequestFull.getPractitionerId()), viewerDAL);
-                        if (practitioner != null) {
-                            referralRequest.setRequester(new org.hl7.fhir.dstu3.model.ReferralRequest.ReferralRequestRequesterComponent(new Reference(practitioner)));
-                        }
+
+                LOG.info(String.valueOf(referralRequestFull.getId() + " : setting practitioner"));
+                if(referralRequestFull.getPractitionerId()!=null) {
+                    org.hl7.fhir.dstu3.model.Practitioner practitioner = getPractitionerResource(Integer.parseInt(referralRequestFull.getPractitionerId()), viewerDAL);
+                    if (practitioner != null) {
+                        referralRequest.setRequester(new org.hl7.fhir.dstu3.model.ReferralRequest.ReferralRequestRequesterComponent(new Reference(practitioner)));
                     }
-                    bundle.addEntry().setResource(referralRequest);
+                }
+                bundle.addEntry().setResource(referralRequest);
             }
         }
     }

@@ -14,6 +14,7 @@ public class ReferralRequest {
     private static final Logger LOG = LoggerFactory.getLogger(Observation.class);
     public static org.hl7.fhir.dstu3.model.ReferralRequest getReferralRequestResource(ReferralRequestFull referralRequestFull) {
 
+        String refId = referralRequestFull.getId();
         org.hl7.fhir.dstu3.model.ReferralRequest referralRequest = new org.hl7.fhir.dstu3.model.ReferralRequest();
         referralRequest.setId(UUID.randomUUID().toString());
         referralRequest.setStatus(org.hl7.fhir.dstu3.model.ReferralRequest.ReferralRequestStatus.ACTIVE);
@@ -22,7 +23,7 @@ public class ReferralRequest {
 
         if(null!=referralRequestFull.getPriority()) {
 
-            LOG.info("setting priority : " + referralRequestFull.getPriority());
+            LOG.info(refId + " : setting priority : " + referralRequestFull.getPriority());
             try {
                 referralRequest.setPriority(org.hl7.fhir.dstu3.model.ReferralRequest.ReferralPriority.fromCode(referralRequestFull.getPriority()));
             } catch (Exception e) {
@@ -32,7 +33,7 @@ public class ReferralRequest {
 
         if(null!=referralRequestFull.getIntent()) {
 
-            LOG.info("setting intent : " + referralRequestFull.getIntent());
+            LOG.info(refId + " : setting intent : " + referralRequestFull.getIntent());
             try {
                 referralRequest.setIntent(org.hl7.fhir.dstu3.model.ReferralRequest.ReferralCategory.fromCode(referralRequestFull.getIntent()));
             } catch (Exception e) {
@@ -41,14 +42,14 @@ public class ReferralRequest {
             }
         }
 
-        LOG.info("setting date");
+        LOG.info(refId + " : setting date");
 
         if(null!=referralRequestFull.getClinicalEffectiveDate())
         {
             referralRequest.setAuthoredOn(referralRequestFull.getClinicalEffectiveDate());
         }
 
-        LOG.info("setting type");
+        LOG.info(refId + " : setting type");
         if(null!=referralRequestFull.getTypeCode())
         {
 
@@ -60,6 +61,7 @@ public class ReferralRequest {
             referralRequest.setReasonCode(Arrays.asList(codeableConcept.addCoding(coding)));
         }
 
+        LOG.info(refId + " : setting specialty");
         if(null!=referralRequestFull.getSpecialityCode())
         {
 
