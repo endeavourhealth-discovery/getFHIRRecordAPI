@@ -20,17 +20,13 @@ public class ReferralRequest {
 
         referralRequest.getMeta().addProfile(ResourceConstants.REFERREL_REQUEST_PROFILE);
 
-        if(null!=referralRequestFull.getPriority())
-        {
+        if(null!=referralRequestFull.getPriority()) {
             try {
                 referralRequest.setPriority(org.hl7.fhir.dstu3.model.ReferralRequest.ReferralPriority.fromCode(referralRequestFull.getPriority()));
+            } catch (Exception e) {
+                referralRequest.setPriority(org.hl7.fhir.dstu3.model.ReferralRequest.ReferralPriority.ROUTINE);
             }
-            catch(Exception e)
-            {
-                LOG.error("In valid Priority found:"+referralRequestFull.getPriority());
-
-            }
-             }
+        }
 
         if(null!=referralRequestFull.getIntent())
         {
@@ -39,7 +35,7 @@ public class ReferralRequest {
             }
             catch(Exception e)
             {
-                LOG.error("In valid Intent found:"+referralRequestFull.getIntent());
+                referralRequest.setIntent(org.hl7.fhir.dstu3.model.ReferralRequest.ReferralCategory.ORDER);
 
             }
               }
