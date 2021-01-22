@@ -352,13 +352,19 @@ public class FhirApi {
 
     private org.hl7.fhir.dstu3.model.Practitioner getPractitionerResource(long practitionerId,JDBCDAL viewerDAL) throws Exception {
         if (!practitionerAndRoleResource.containsKey(practitionerId)) {
+            LOG.info(String.valueOf(practitionerId) + " : getting practitioner from DB");
             PractitionerFull practitionerResult = viewerDAL.getPractitionerFull(practitionerId);
+            LOG.info(String.valueOf(practitionerId) + " : getting practitioner resource");
             org.hl7.fhir.dstu3.model.Practitioner practitionerResource = Practitioner.getPractitionerResource(practitionerResult);
 
             if (practitionerResource == null) {
                 return null;
             }
+
+            LOG.info(String.valueOf(practitionerId) + " : its not null, getting role resource");
             org.hl7.fhir.dstu3.model.PractitionerRole practitionerRoleResource = PractitionerRole.getPractitionerRoleResource(practitionerResult);
+
+            LOG.info(String.valueOf(practitionerId) + " : setting practitioner");
             practitionerRoleResource.setPractitioner(new Reference(practitionerResource));
             practitionerAndRoleResource.put(practitionerId, Arrays.asList(practitionerResource, practitionerRoleResource));
         }
