@@ -883,9 +883,13 @@ public class FhirApi {
                 if(referralRequestFull.getPractitionerId()!=null) {
                     org.hl7.fhir.dstu3.model.Practitioner practitioner = getPractitionerResource(Integer.parseInt(referralRequestFull.getPractitionerId()), viewerDAL);
                     if (practitioner != null) {
+
+                        LOG.info(String.valueOf(referralRequestFull.getId() + " : setting requestor"));
                         referralRequest.setRequester(new org.hl7.fhir.dstu3.model.ReferralRequest.ReferralRequestRequesterComponent(new Reference(practitioner)));
                     }
                 }
+
+                LOG.info(String.valueOf(referralRequestFull.getId() + " : setting resource"));
                 bundle.addEntry().setResource(referralRequest);
             }
         }
