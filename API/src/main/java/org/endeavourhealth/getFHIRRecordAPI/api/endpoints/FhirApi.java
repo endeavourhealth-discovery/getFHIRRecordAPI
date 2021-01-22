@@ -535,6 +535,7 @@ public class FhirApi {
             fhirMedicationStatementList.setSubject(new Reference(patientResource));
 
             for (MedicationStatementFull medicationStatementFull : medicationStatementList) {
+                LOG.info("processing : " + String.valueOf(medicationStatementFull.getId()));
                 medicationStatementResource = MedicationStatement.getMedicationStatementResource(medicationStatementFull);
                 medicationStatementResource.getMeta().addTag(patientCodingMap.get((medicationStatementFull.getPatientId())));
                 medicationStatementResource.setSubject(new Reference(patientResource));
