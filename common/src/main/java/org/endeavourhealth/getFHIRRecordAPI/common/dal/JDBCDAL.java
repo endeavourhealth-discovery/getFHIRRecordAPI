@@ -261,10 +261,10 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "coalesce(o.result_value_units,'') as resultValueUnits, "+
                 "coalesce(cat.description, '') as category from observation o " +
                 "join concept c on o.non_core_concept_id = c.dbid " +
-                "left outer join code_category_values obsCategory on obsCategory.concept_dbid = o.non_core_concept_id  " +
+                "left outer join code_category_values obsCategory on obsCategory.concept_dbid = o.non_core_concept_id and obsCategory.code_category_id  in (28,33,38,49) " +
                 "left outer join code_category cat on cat.id = obsCategory.code_category_id "+
                 "where  o.patient_id in (" + StringUtils.join(id, ',') + ") " +
-                "and (o.is_problem = 0 or obsCategory.code_category_id  in (28,33,38,49) and obsCategory.code_category_id not in (34)) and o.non_core_concept_id in(13)";
+                "and (o.is_problem = 0  and obsCategory.code_category_id not in (34)) and o.non_core_concept_id in(13)";
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -721,9 +721,9 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "FROM observation a join concept c on c.dbid = a.non_core_concept_id " +
                 "join code_category_values ccv on ccv.concept_dbid = a.non_core_concept_id " +
                 "join code_category cat on cat.id = ccv.code_category_id " +
-                "left join code_category_values ccv2 on ccv2.concept_dbid = a.non_core_concept_id " +
+                "left join code_category_values ccv2 on ccv2.concept_dbid = a.non_core_concept_id and ccv2.code_category_id in (28,33,34,38,49) " +
                 "left join code_category cat2 on cat2.id = ccv2.code_category_id " +
-                "where ccv.code_category_id = 8 and ccv2.code_category_id in (28,33,34,38,49) and patient_id in (" + StringUtils.join(patientIds, ',') + ")";
+                "where ccv.code_category_id = 8 and patient_id in (" + StringUtils.join(patientIds, ',') + ")";
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 conditionFullList= getConditionFullList(resultSet);
