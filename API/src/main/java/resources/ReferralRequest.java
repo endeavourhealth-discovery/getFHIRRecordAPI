@@ -21,6 +21,8 @@ public class ReferralRequest {
         referralRequest.getMeta().addProfile(ResourceConstants.REFERREL_REQUEST_PROFILE);
 
         if(null!=referralRequestFull.getPriority()) {
+
+            LOG.info("setting priority : " + referralRequestFull.getPriority());
             try {
                 referralRequest.setPriority(org.hl7.fhir.dstu3.model.ReferralRequest.ReferralPriority.fromCode(referralRequestFull.getPriority()));
             } catch (Exception e) {
@@ -28,23 +30,25 @@ public class ReferralRequest {
             }
         }
 
-        if(null!=referralRequestFull.getIntent())
-        {
+        if(null!=referralRequestFull.getIntent()) {
+
+            LOG.info("setting intent : " + referralRequestFull.getIntent());
             try {
                 referralRequest.setIntent(org.hl7.fhir.dstu3.model.ReferralRequest.ReferralCategory.fromCode(referralRequestFull.getIntent()));
-            }
-            catch(Exception e)
-            {
+            } catch (Exception e) {
                 referralRequest.setIntent(org.hl7.fhir.dstu3.model.ReferralRequest.ReferralCategory.ORDER);
 
             }
-              }
+        }
+
+        LOG.info("setting date");
 
         if(null!=referralRequestFull.getClinicalEffectiveDate())
         {
             referralRequest.setAuthoredOn(referralRequestFull.getClinicalEffectiveDate());
         }
 
+        LOG.info("setting type");
         if(null!=referralRequestFull.getTypeCode())
         {
 
