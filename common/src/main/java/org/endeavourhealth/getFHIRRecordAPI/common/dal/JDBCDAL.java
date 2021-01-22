@@ -315,7 +315,7 @@ public class JDBCDAL extends BaseJDBCDAL {
         return procedureList;
     }
 
-    public List<TelecomFull> getTelecomFull(Integer patientId) throws Exception {
+    public List<TelecomFull> getTelecomFull(long patientId) throws Exception {
         List<TelecomFull> telecomFullList = new ArrayList<>();
 
         String sql = "select ctype.description as description1, cuse.description as description2, pc.value as value, pc.patient_id as id from patient_contact pc " +
@@ -407,7 +407,7 @@ public class JDBCDAL extends BaseJDBCDAL {
         return procedureFull;
     }
 
-    public LocationFull getLocation(Integer organizationId) throws Exception {
+    public LocationFull getLocation(long organizationId) throws Exception {
         LocationFull locationFull = new LocationFull();
 
         String sql = "SELECT l.id as id, coalesce(l.name, '') as name, " +
@@ -418,7 +418,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "where l.managing_organization_id = ?";
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
-            statement.setInt(1, organizationId);
+            statement.setLong(1, organizationId);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next())
                     locationFull = getLocation(resultSet);

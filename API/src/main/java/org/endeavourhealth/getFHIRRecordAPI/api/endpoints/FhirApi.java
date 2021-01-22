@@ -184,7 +184,7 @@ public class FhirApi {
                 throw new ResourceNotFoundException("Patient resource with id = '" + nhsNumber + "' not found");
             }
 
-            List<TelecomFull> telecomFullList = viewerDAL.getTelecomFull(Integer.parseInt(patient.getId()));
+            List<TelecomFull> telecomFullList = viewerDAL.getTelecomFull(Long.parseLong(patient.getId()));
             patient.setTelecomFullList(telecomFullList);
 
             //hide  Demographic details for run mode = test
@@ -201,7 +201,7 @@ public class FhirApi {
             bundle.setMeta(meta);
 
             if (patient.getOrglocation().trim().length() > 0) {
-                patientResource.setManagingOrganization(new Reference(getOrganizationFhirObj(Integer.parseInt(patient.getOrglocation()), viewerDAL)));
+                patientResource.setManagingOrganization(new Reference(getOrganizationFhirObj(Long.parseLong(patient.getOrglocation()), viewerDAL)));
             }
             if (patient.getPractitionerId() != 0) {
                 org.hl7.fhir.dstu3.model.Practitioner practitioner = getPractitionerResource(patient.getPractitionerId(),viewerDAL);
@@ -432,7 +432,7 @@ public class FhirApi {
 
     private void addLocationToBundle(String organizationId,JDBCDAL viewerDAL) throws Exception {
         if (StringUtils.isNotEmpty(organizationId)) {
-            LocationFull locationFull = viewerDAL.getLocation(Integer.parseInt(organizationId));
+            LocationFull locationFull = viewerDAL.getLocation(Long.parseLong(organizationId));
             if(locationFull.getId() != 0) {
                 org.hl7.fhir.dstu3.model.Location locationModel = Location.getLocationResource(locationFull);
 
@@ -757,7 +757,7 @@ public class FhirApi {
                     if (immunizationFull.getEncounterID().trim().length() > 0)
                         immunizationObj.setEncounter(new Reference(getEncounterFhirObj(Long.parseLong(immunizationFull.getEncounterID()), viewerDAL)));
                     if (immunizationFull.getPractitionerID().trim().length() > 0) {
-                        org.hl7.fhir.dstu3.model.Practitioner practitioner = getPractitionerResource(Integer.parseInt(immunizationFull.getPractitionerID()), viewerDAL);
+                        org.hl7.fhir.dstu3.model.Practitioner practitioner = getPractitionerResource(Long.parseLong(immunizationFull.getPractitionerID()), viewerDAL);
                         if (practitioner != null) {
                             immunizationObj.addPractitioner().setActor(new Reference(practitioner));
                         }
@@ -882,7 +882,7 @@ public class FhirApi {
                 LOG.info(String.valueOf(referralRequestFull.getId() + " : setting recipient"));
                 if(referralRequestFull.getRecipientOrganizationId()!=null) {
                     List<Reference> recipients=new ArrayList<>();
-                    recipients.add(new Reference(getOrganizationFhirObj(Integer.parseInt(referralRequestFull.getRecipientOrganizationId()),viewerDAL)));
+                    recipients.add(new Reference(getOrganizationFhirObj(Long.parseLong(referralRequestFull.getRecipientOrganizationId()),viewerDAL)));
                     referralRequest.setRecipient(recipients);
                 }
 
