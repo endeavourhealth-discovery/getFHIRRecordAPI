@@ -8,6 +8,9 @@ import models.Request;
 import models.ResourceNotFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.config.ConfigManager;
+import org.endeavourhealth.core.database.dal.usermanager.caching.ProjectCache;
+import org.endeavourhealth.core.database.dal.usermanager.caching.UserCache;
+import org.endeavourhealth.core.database.rdbms.usermanager.models.UserProjectEntity;
 import org.endeavourhealth.getFHIRRecordAPI.common.constants.ResourceConstants;
 import org.endeavourhealth.getFHIRRecordAPI.common.dal.JDBCDAL;
 import org.endeavourhealth.getFHIRRecordAPI.common.models.*;
@@ -53,13 +56,15 @@ public class FhirApi {
     JsonNode jsonTestNHSIdMappings;
     String originalNHSNumber = null;
     String runMode = null;
+    Boolean useDSM = false;
     Set<String> observationIds;
     Set<String> pathAndRadObservationIds;
     String morphString = "XXXX";
+    List<String> validOrgs = new ArrayList<>();
 
     Bundle bundle;
     org.hl7.fhir.dstu3.model.Patient patientResource;
-    public JSONObject handleRequest(Request request) throws ResourceNotFoundException {
+    public JSONObject handleRequest(Request request, String userId) throws ResourceNotFoundException {
         JSONObject json = null;
         JSONObject json1 = null;
         List<JSONObject>  jsonObjectList = new ArrayList<>();
@@ -75,6 +80,15 @@ public class FhirApi {
 
                 //get run mode
                 runMode = getRunMode();
+                useDSM = getDSMMode();
+
+                if (useDSM) {
+                    try {
+                        checkUserAccessToOrganisations(userId);
+                    } catch (Exception e) {
+                        LOG.error(e.getMessage());
+                    }
+                }
 
                 for (Parameter param : parameters) {
                     String paramName = param.getName();
@@ -129,6 +143,41 @@ public class FhirApi {
         return runMode;
     }
 
+    private Boolean getDSMMode() {
+        try {
+            useDSM = false;
+            useDSM = jsonTestNHSIdMappings.get("useDSM").asBoolean();
+            LOG.info("using DSM = " + useDSM);
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+        }
+        return useDSM;
+    }
+
+    private void checkUserAccessToOrganisations(String userId) throws Exception {
+
+        if (userId == null || !userId.equals("")) {
+
+            List<UserProjectEntity> userProjects = UserCache.getUserProjectForUserId(userId);
+
+            if (userProjects.size() < 1) {
+                LOG.info("User is not assigned to a project...unable to find organisations");
+                return;
+            } else if (userProjects.size() > 1) {
+                LOG.info("User is assigned to multiple projects...unable to find organisations");
+            }
+
+            List<String> orgList = ProjectCache.getAllPublishersForValidProject(userProjects.get(0).getProjectId(), true);
+
+            validOrgs = orgList;
+
+            for (String org : orgList) {
+                LOG.info(org);
+            }
+
+        }
+    }
+
     /*
      * Check if the mapping for input NHS number exists in the config table and return the mapped NHS number
      */
@@ -174,10 +223,12 @@ public class FhirApi {
 
         try (JDBCDAL viewerDAL = new JDBCDAL()) {
 
+            viewerDAL.setValidOrgs(validOrgs);
+
             if (id > 0 || !dateOfBirth.equals("0"))
-                patient = viewerDAL.getPatientFull(id, nhsNumber, dateOfBirth, activePatientsOnly);
+                patient = viewerDAL.getPatientFull(id, nhsNumber, dateOfBirth, activePatientsOnly, useDSM);
             else
-                patient = viewerDAL.getPatientFull(nhsNumber, activePatientsOnly);
+                patient = viewerDAL.getPatientFull(nhsNumber, activePatientsOnly, useDSM);
 
             LOG.info("Got Patient");
             if (patient == null) {
@@ -219,11 +270,11 @@ public class FhirApi {
             Map<Long, String> patientMap;
             List<Long> patientIds = null;
             if (!nhsNumber.equals("0")) {
-                patientMap = viewerDAL.getPatientIds(nhsNumber, 0L);
+                patientMap = viewerDAL.getPatientIds(nhsNumber, 0L, useDSM);
                 patientIds = patientMap.keySet().stream()
                         .collect(Collectors.toList());
             } else {
-                patientMap = viewerDAL.getPatientIds(nhsNumber, patientId);
+                patientMap = viewerDAL.getPatientIds(nhsNumber, patientId, useDSM);
                 patientIds = Arrays.asList(patientId);
             }
             setCoding(patientMap);

@@ -51,7 +51,10 @@ public class CareRecordEndpoint {
     public Response postFhir(@Context HttpServletRequest httpServletRequest) throws Exception {
         LOG.debug("getFhir POST");
 
+        String userId = httpServletRequest.getHeader("user_id");
+
         String request = extractRequestBody(httpServletRequest);
+
         Gson g = new Gson();
         Params p = g.fromJson(request, Params.class);
         Request requestModel = new Request();
@@ -60,7 +63,7 @@ public class CareRecordEndpoint {
 
 
         FhirApi api = new FhirApi();
-        JSONObject result = (JSONObject) api.handleRequest(requestModel);
+        JSONObject result = (JSONObject) api.handleRequest(requestModel, userId);
         return Response
                 .ok()
                 .entity(result)

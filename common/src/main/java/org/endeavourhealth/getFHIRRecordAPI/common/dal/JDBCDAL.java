@@ -13,8 +13,13 @@ import java.util.*;
 public class JDBCDAL extends BaseJDBCDAL {
     private static final Logger LOG = LoggerFactory.getLogger(JDBCDAL.class);
 
+    List<String> validOrgs = new ArrayList<>();
 
-    public PatientFull getPatientFull(Integer id, String nhsNumber, String dateOfBirth, boolean includeOnlyActivePatient) throws Exception {
+    public void setValidOrgs(List<String> orgs) {
+        validOrgs = orgs;
+    }
+
+    public PatientFull getPatientFull(Integer id, String nhsNumber, String dateOfBirth, boolean includeOnlyActivePatient, boolean includeOrgFilter) throws Exception {
         PatientFull result = null;
 
         String sql = "SELECT p.id,"+
@@ -40,7 +45,8 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "e.date_registered_end as registeredEndDate,"+
                 "coalesce(e.date_registered,'') as startdate,"+
                 "'HOME' as adduse,"+
-                "'' as otheraddresses "+
+                "'' as otheraddresses, "+
+                " o.ods_code as ods_code "+
                 "FROM patient p " +
                 "join organization o on o.id = p.organization_id " +
                 "join patient_address a on a.id = p.current_address_id " +
@@ -53,23 +59,31 @@ public class JDBCDAL extends BaseJDBCDAL {
 
 
         if (includeOnlyActivePatient){
-            sql.concat(" and c2.code = 'R'  and p.date_of_death IS NULL and e.date_registered <= now() and (e.date_registered_end > now() or e.date_registered_end IS NULL)");
+            sql = sql.concat(" and c2.code = 'R'  and p.date_of_death IS NULL and e.date_registered <= now() and (e.date_registered_end > now() or e.date_registered_end IS NULL)");
         }
 
-            try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                statement.setInt(1, id);
-                statement.setString(2, nhsNumber);
-                statement.setString(3, (dateOfBirth.equals("0") ? null : dateOfBirth));
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    if (resultSet.next())
-                        result = getPatientFull(resultSet);
+        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+            statement.setInt(1, id);
+            statement.setString(2, nhsNumber);
+            statement.setString(3, (dateOfBirth.equals("0") ? null : dateOfBirth));
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    if (includeOrgFilter) {
+                        String odsCode = resultSet.getString("ods_code");
+                        if (!validOrgs.contains(odsCode)) {
+                            return result;
+                        }
+                    }
+                    result = getPatientFull(resultSet);
                 }
             }
+        }
 
         return result;
     }
 
-    public PatientFull getPatientFull(String nhsNumber, boolean includeOnlyActivePatient) throws Exception {
+    public PatientFull getPatientFull(String nhsNumber, boolean includeOnlyActivePatient, boolean includeOrgFilter) throws Exception {
         PatientFull result = null;
 
         String sql = "SELECT p.id,"+
@@ -95,7 +109,8 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "coalesce(c2.description, '') as registrationStatusValue," +
                 "coalesce(e.date_registered,'') as startdate,"+
                 "'HOME' as adduse,"+
-                "'' as otheraddresses "+
+                "'' as otheraddresses, " +
+                " o.ods_code as ods_code "+
                 "FROM patient p " +
                 "join organization o on o.id = p.organization_id " +
                 "join patient_address a on a.id = p.current_address_id " +
@@ -107,22 +122,29 @@ public class JDBCDAL extends BaseJDBCDAL {
                 " (p.nhs_number = ?)";
 
         if (includeOnlyActivePatient) {
-            sql.concat("and c2.code = 'R' and p.date_of_death IS NULL and e.date_registered <= now() and (e.date_registered_end > now() or e.date_registered_end IS NULL)");
+            sql = sql.concat("and c2.code = 'R' and p.date_of_death IS NULL and e.date_registered <= now() and (e.date_registered_end > now() or e.date_registered_end IS NULL)");
         }
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             statement.setString(1, nhsNumber);
 
             try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next())
+                if (resultSet.next()) {
+                    if (includeOrgFilter) {
+                        String odsCode = resultSet.getString("ods_code");
+                        if (!validOrgs.contains(odsCode)) {
+                            return result;
+                        }
+                    }
                     result = getPatientFull(resultSet);
+                }
             }
         }
 
         return result;
     }
 
-    public Map<Long, String> getPatientIds(String nhsNumber, Long id) throws Exception {
+    public Map<Long, String> getPatientIds(String nhsNumber, Long id, boolean includeOrgFilter) throws Exception {
         Map<Long, String> results = new HashMap();
         String sql = "SELECT p.id, " +
                 "o.ods_code as code, " +
@@ -132,8 +154,16 @@ public class JDBCDAL extends BaseJDBCDAL {
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             statement.setString(1, nhsNumber);
             statement.setLong(2, id);
+
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
+
+                    if (includeOrgFilter) {
+                        String odsCode = resultSet.getString("code");
+                        if (!validOrgs.contains(odsCode)) {
+                            continue;
+                        }
+                    }
                     results.put(resultSet.getLong("id"), StringUtils.join(
                             resultSet.getString("code"), "#", resultSet.getString("display")));
                 }

@@ -52,7 +52,6 @@ public class ConnectionPool extends GenericCache<Connection> {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
 
-            ConfigManager.Initialize("fhir-record-api");
             JsonNode json = ConfigManager.getConfigurationAsJson("database");
             String url = json.get("url").asText();
             String user = json.get("username").asText();
