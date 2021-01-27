@@ -7,6 +7,7 @@ public class FamilyMemberHistoryFull {
     private String status;
     private String name;
     private String code;
+    private long practitionerId;
 
     public long getId() {
         return id;
@@ -23,6 +24,15 @@ public class FamilyMemberHistoryFull {
 
     public FamilyMemberHistoryFull setDate(String date) {
         this.date = date;
+        return this;
+    }
+
+    public long getPractitionerId() {
+        return practitionerId;
+    }
+
+    public FamilyMemberHistoryFull setPractitionerId(long practitionerId) {
+        this.practitionerId = practitionerId;
         return this;
     }
 

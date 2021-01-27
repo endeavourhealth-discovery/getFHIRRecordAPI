@@ -929,7 +929,7 @@ public class JDBCDAL extends BaseJDBCDAL {
      */
     public List<FamilyMemberHistoryFull> getFamilyMemberHistoryFullList(List<Long> patientIds) throws Exception {
         List<FamilyMemberHistoryFull> result = null;
-        String sql = "SELECT o.id as id, o.patient_id as patientId, o.clinical_effective_date as date, " +
+        String sql = "SELECT o.id as id, o.patient_id as patientId, o.clinical_effective_date as date, o.practitioner_id as practitionerId, o.organization_id as organizationId, " +
                 "CASE WHEN o.problem_end_date IS NULL THEN 'Active' " +
                 "ELSE 'Past' END as status,c.name,c.code " +
                 "FROM observation o " +
@@ -962,7 +962,8 @@ public class JDBCDAL extends BaseJDBCDAL {
                     .setDate(resultSet.getString("date"))
                     .setStatus(resultSet.getString("status"))
                     .setName(resultSet.getString("name"))
-                    .setCode(resultSet.getString("code"));
+                    .setCode(resultSet.getString("code"))
+            .setPractitionerId(resultSet.getInt("practitionerId"));
             familyMemberHistoryList.add(familyMemberHistory);
         }
         return familyMemberHistoryList;

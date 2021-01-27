@@ -900,6 +900,11 @@ public class FhirApi {
                 if(!observationIds.contains(observationId) && !pathAndRadObservationIds.contains(observationId)) {
                     observationIds.add(observationId);
                     familyMemberHistoryResource = familyMemberHistory.getFamilyMemberHistoryResource(familyMemberHistoryFull);
+                    org.hl7.fhir.dstu3.model.Practitioner practitioner = getPractitionerResource(familyMemberHistoryFull.getPractitionerId(),viewerDAL);
+                    Extension ext1 = new Extension();
+                    ext1.setUrl("https://fhir.hl7.org.uk/STU3/StructureDefinition/Extension-CareConnect-Recorder-1");
+                    ext1.setValue(new Reference(practitioner));
+                    familyMemberHistoryResource.addExtension(ext1);
                     familyMemberHistoryResource.getMeta().addTag(patientCodingMap.get((familyMemberHistoryFull.getPatientId())));
                     familyMemberHistoryResource.setPatient(new Reference(patientResource));
 
