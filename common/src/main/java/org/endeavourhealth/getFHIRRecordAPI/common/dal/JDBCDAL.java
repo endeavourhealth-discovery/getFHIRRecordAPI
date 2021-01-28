@@ -27,7 +27,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "coalesce(o.name,'') as orgname,"+
                 "coalesce(p.date_of_birth,'') as dob,"+
                 "p.date_of_death as dod,"+
-                "coalesce(c.name,'') as gender,"+
+                "coalesce(c.description, c.name, '') as gender,"+
                 "coalesce(p.nhs_number,'') as nhsNumber,"+
                 "coalesce(p.last_name,'') as lastname,"+
                 "coalesce(p.first_names,'') as firstname,"+
@@ -91,7 +91,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "coalesce(o.name,'') as orgname,"+
                 "coalesce(p.date_of_birth,'') as dob,"+
                 "p.date_of_death as dod,"+
-                "coalesce(c.name,'') as gender,"+
+                "coalesce(c.description, c.name, '') as gender,"+
                 "coalesce(p.nhs_number,'') as nhsNumber,"+
                 "coalesce(p.last_name,'') as lastname,"+
                 "coalesce(p.first_names,'') as firstname,"+
@@ -330,7 +330,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "coalesce(o.practitioner_id, '') as practitionerId," +
                 "coalesce(o.organization_id, '') as organizationId," +
                 "CASE WHEN o.problem_end_date IS NULL THEN 'Active'\n" +
-                "ELSE 'Past' END as status,c.name, c.code\n" +
+                "ELSE 'Past' END as status,coalesce(c.description, c.name, '') as name, c.code\n" +
                 "FROM observation o\n" +
                 "join concept c on c.dbid = o.non_core_concept_id\n" +
                 "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
@@ -366,7 +366,7 @@ public class JDBCDAL extends BaseJDBCDAL {
         String[] religionData = new String[2];
 
         String sql = "select " +
-                "c.name as name, c.code as code from observation o " +
+                "coalesce(c.description, c.name, '') as name, c.code as code from observation o " +
                 "join concept c on o.non_core_concept_id = c.dbid " +
                 "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
                 "where ccv.code_category_id in (45) and " +
@@ -388,7 +388,7 @@ public class JDBCDAL extends BaseJDBCDAL {
         String[] language = new String[2];
 
         String sql = "select " +
-                "c.name as name, c.code as code from observation o " +
+                "coalesce(c.description, c.name, '') as name, c.code as code from observation o " +
                 "join concept c on o.non_core_concept_id = c.dbid " +
                 "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
                 "where ccv.code_category_id in (48) and " +
@@ -550,7 +550,7 @@ public class JDBCDAL extends BaseJDBCDAL {
 
     public List<AllergyFull> getAllergyFullList(List<Long> patientids) throws Exception {
         ArrayList<AllergyFull> allergiesFullList =null;
-        String sql = " SELECT a.id as id, a.patient_id as patientId, a.clinical_effective_date as date, c.name ,c.code,a.organization_id,a.practitioner_id " +
+        String sql = " SELECT a.id as id, a.patient_id as patientId, a.clinical_effective_date as date, coalesce(c.description, c.name, '') as name ,c.code,a.organization_id,a.practitioner_id " +
             " FROM allergy_intolerance a join concept c on c.dbid = a.non_core_concept_id where patient_id in (" + StringUtils.join(patientids, ',') + ")";
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
@@ -586,7 +586,7 @@ public class JDBCDAL extends BaseJDBCDAL {
 
     public List<AllergyFull> getAllergyFullListFromObservation(List<Long> patientids) throws Exception {
         ArrayList<AllergyFull> allergiesFullList =null;
-        String sql = "select o.id as id, o.patient_id as patientId, o.clinical_effective_date as date, c.name ,c.code,o.organization_id,o.practitioner_id from observation o " +
+        String sql = "select o.id as id, o.patient_id as patientId, o.clinical_effective_date as date, coalesce(c.description, c.name, '') as name ,c.code,o.organization_id,o.practitioner_id from observation o " +
                 "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
                 "join concept c on c.dbid = o.non_core_concept_id " +
                 "where ccv.code_category_id in (2,3) and o.patient_id in  (" + StringUtils.join(patientids, ',') + ")";
@@ -655,7 +655,7 @@ public class JDBCDAL extends BaseJDBCDAL {
      */
     public List<MedicationStatementFull> getMedicationStatementFullList(List<Long> patientIds) throws Exception {
         List<MedicationStatementFull> result = null;
-        String sql = "select ms.id as msid, c.name, c.code, " +
+        String sql = "select ms.id as msid, coalesce(c.description, c.name, '') as name, c.code, " +
                 "coalesce(ms.clinical_effective_date,'') as clinicalEffDt, " +
                 "coalesce(ms.patient_id,'') as patientId, " +
                 "coalesce(ms.dose,'') as dose, " +
@@ -747,7 +747,7 @@ public class JDBCDAL extends BaseJDBCDAL {
     public List<ConditionFull>  getConditionFullList(List<Long> patientIds) throws Exception {
         ArrayList<ConditionFull> conditionFullList =null;
         String sql = "SELECT a.id as id, a.patient_id as patientId, a.clinical_effective_date as date,IF(ISNULL(a.problem_end_date), 'active', 'resolved') " +
-                "AS ClinicalStatus, c.name ,c.code, cat2.description as category, a.is_problem as problem " +
+                "AS ClinicalStatus, coalesce(c.description, c.name, '') as name ,c.code, cat2.description as category, a.is_problem as problem " +
                 "FROM observation a left join concept c on c.dbid = a.non_core_concept_id " +
                 "left join code_category_values ccv2 on ccv2.concept_dbid = a.non_core_concept_id and ccv2.code_category_id in (28,33,34,38,49) " +
                 "left join code_category cat2 on cat2.id = ccv2.code_category_id " +
@@ -783,7 +783,7 @@ public class JDBCDAL extends BaseJDBCDAL {
 
     public List<EncounterFull> getEncounterFullList(List<Long> patientIds, Long encounterId, boolean isPatient) throws Exception {
         ArrayList<EncounterFull> encounterFullList =null;
-        String sql = " SELECT  e.patient_id as patientId, e.practitioner_id as practitioner_id,e.organization_id as organization_id,e.clinical_effective_date as date, e.episode_of_care_id as episode_of_care_id, e.end_date as endDate, e.id,coalesce(c.name,'') as name ,coalesce(c.code,'') as code,  CASE WHEN e.end_date IS NULL THEN 'Active' ELSE 'Past' END as status " +
+        String sql = " SELECT  e.patient_id as patientId, e.practitioner_id as practitioner_id,e.organization_id as organization_id,e.clinical_effective_date as date, e.episode_of_care_id as episode_of_care_id, e.end_date as endDate, e.id,coalesce(c.description, c.name, '') as name ,coalesce(c.code,'') as code,  CASE WHEN e.end_date IS NULL THEN 'Active' ELSE 'Past' END as status " +
                      " FROM encounter e LEFT JOIN concept c on c.dbid = e.non_core_concept_id ";
         String where_clause="";
         if (isPatient) {
@@ -830,16 +830,10 @@ public class JDBCDAL extends BaseJDBCDAL {
 
     public List<ImmunizationFull> getImmunizationsFullList(List<Long> patientIds) throws Exception {
         ArrayList<ImmunizationFull> immunizationFullList =null;
-        String sql = " SELECT o.id as id, o.patient_id as patientId, o.clinical_effective_date as cfd, coalesce(o.encounter_id ,'') as encounterid ,coalesce(o.practitioner_id,'') as practitionerid, c.name ,c.code  " +
+        String sql = " SELECT o.id as id, o.patient_id as patientId, o.clinical_effective_date as cfd, coalesce(o.encounter_id ,'') as encounterid ,coalesce(o.practitioner_id,'') as practitionerid, coalesce(c.description, c.name, '') as name ,c.code  " +
                      " FROM observation o  join concept c on c.dbid = o.non_core_concept_id " +
                     " join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id "+
                      " where patient_id in (" + StringUtils.join(patientIds, ',') + ") " +  " and ccv.code_category_id in (21) ";
-
-        /* sql = " SELECT o.clinical_effective_date as cfd, coalesce(o.encounter_id ,'') as encounterid ,coalesce(o.practitioner_id,'') as practitionerid, c.name ,c.code  " +
-                " FROM observation o  join concept c on c.dbid = o.non_core_concept_id " +
-                " where patient_id = ?";
-                System.out.println(sql);*/
-
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -882,7 +876,7 @@ public class JDBCDAL extends BaseJDBCDAL {
     public List<AppointmentFull> getAppointmentFullList(List<Long> patientIds) throws Exception {
         List<AppointmentFull> result = null;
         String sql = "SELECT a.id, a.patient_id as patientId, a.schedule_id as sId, a.practitioner_id as prId, a.organization_id as oId, " +
-                "a.actual_duration as actualDura, a.start_date as startDt, a.planned_duration as plannedDura, s.type,c.name as appointment_status " +
+                "a.actual_duration as actualDura, a.start_date as startDt, a.planned_duration as plannedDura, s.type,coalesce(c.description, c.name, '') as appointment_status " +
                 " FROM appointment a join schedule s on a.schedule_id = s.id" +
                 " join concept c on c.dbid = a.appointment_status_concept_id  where a.patient_id in (" + StringUtils.join(patientIds, ',') + ") ";
 
@@ -931,7 +925,7 @@ public class JDBCDAL extends BaseJDBCDAL {
         List<FamilyMemberHistoryFull> result = null;
         String sql = "SELECT o.id as id, o.patient_id as patientId, o.clinical_effective_date as date, o.practitioner_id as practitionerId, o.organization_id as organizationId, " +
                 "CASE WHEN o.problem_end_date IS NULL THEN 'Active' " +
-                "ELSE 'Past' END as status,c.name,c.code " +
+                "ELSE 'Past' END as status,coalesce(c.description, c.name, '') as name,c.code " +
                 "FROM observation o " +
                 "join concept c on c.dbid = o.non_core_concept_id \n "+
                 "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id\n "+
