@@ -27,7 +27,7 @@ public class MedicationStatement {
 				.setValue(String.valueOf(medicationStatementResult.getId()))
 				.setSystem(ResourceConstants.SYSTEM_ID);
 
-		medicationStatement.setStatus(medicationStatementResult.getCancellationDate() == null ? org.hl7.fhir.dstu3.model.MedicationStatement.MedicationStatementStatus.ACTIVE :
+		medicationStatement.setStatus(medicationStatementResult.getCancellationDate().equals("") ? org.hl7.fhir.dstu3.model.MedicationStatement.MedicationStatementStatus.ACTIVE :
 				org.hl7.fhir.dstu3.model.MedicationStatement.MedicationStatementStatus.COMPLETED);
 		medicationStatement.setId(String.valueOf(id));
 		medicationStatement.getMeta().addProfile("https://fhir.hl7.org.uk/STU3/StructureDefinition/CareConnect-MedicationStatement-1");
