@@ -76,7 +76,7 @@ public class FhirApi {
                 String nhsNumber = "0";
                 String dateOfBirth = "0";
                 boolean onlyDemographics = false;
-                boolean activePatientsOnly = false;
+                boolean activePatientsOnly = true;
 
                 //get run mode
                 runMode = getRunMode();
@@ -109,9 +109,9 @@ public class FhirApi {
                         if (param.getPart().get(0) != null && param.getPart().get(0).getValueBoolean()) {
                             onlyDemographics = true;
                         }
-                    } else if (paramName.equals("activePatientsOnly")) {
+                    } else if (paramName.equals("includeInactivePatients")) {
                         if (param.getPart().get(0) != null && param.getPart().get(0).getValueBoolean()) {
-                            activePatientsOnly = true;
+                            activePatientsOnly = false;
                         }
                     }
                 }
@@ -232,6 +232,7 @@ public class FhirApi {
 
             LOG.info("Got Patient");
             if (patient == null) {
+                LOG.info("Patient not found");
                 throw new ResourceNotFoundException("Patient resource with id = '" + nhsNumber + "' not found");
             }
 
@@ -433,7 +434,6 @@ public class FhirApi {
             for (ConditionFull conditionFull : conditions) {
                 String observationId = String.valueOf(conditionFull.getId());
                 if(!observationIds.contains(observationId) && !pathAndRadObservationIds.contains(observationId)) {
-                    observationIds.add(observationId);
                     org.hl7.fhir.dstu3.model.Condition conditionFhirObj = Condition.getConditionResource(conditionFull, viewerDAL);
                     conditionFhirObj.getMeta().addTag(patientCodingMap.get(conditionFull.getPatientId()));
                     fihrConditionListObj.addEntry().setItem(new Reference(conditionFhirObj));

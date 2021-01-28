@@ -261,7 +261,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "join concept c on o.non_core_concept_id = c.dbid " +
                 "left outer join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id and ccv.code_category_id in (28,33,34,38,49) " +
                 "left outer join code_category cat on cat.id = ccv.code_category_id "+
-                "where o.patient_id in (" + StringUtils.join(id, ',') + ") ";
+                "where o.is_problem = 0 and o.patient_id in (" + StringUtils.join(id, ',') + ") ";
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
