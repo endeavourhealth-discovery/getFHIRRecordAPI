@@ -1,14 +1,47 @@
+
+/*
+this determines how the app runs
+mode:   test - anonymises the demographic information and uses the nhs_mappings below to map fake NHS numbers to real ones
+        normal - runs in normal fully identifiable mode and ignores the nhs_mappings
+
+useDSM: Determines if the Data Sharing manager is used to restrict organisations the requesting user is allowed to request data from
+        Checks for the relevant project associated with the user and returns all the publishers to that project
+        Also returns the config name used by the project which sets what database to use for the extract.
+        This means we can have multiple clients using the API getting data from different databases and restricted to specific orgs to their project
+        If true then all the above checks are made when a request comes in
+        If false then it lets all requests get access to all data (use locally or in dev only)
+
+devConfigName:      When running in dev mode or locally, to save the hassle of setting up DSM on your local machine, you can use this override to
+                    set the config Name that would normally be obtained from the project. Set this to a global - db_subscriber entry that matches your config
+                    eg.  mysql_compass_v2_pi
+
+nhs_mappings:       In test mode above, maps the fake NHS numbers to real NHS numbers
+ */
 INSERT INTO config.config
 values
-('fhir-record-api', 'run_mode',  '{"mode" : "test","nhs_mappings": [{ "anonymised": "9999999991","mapped": "1234567899"},{"anonymised": "9999999992","mapped": "9876543211"}]}');
+('fhir-record-api', 'run_mode',
+ '{
+	"mode": "normal",
+	"useDSM": "false",
+	"devConfigName": "mysql_compass_v2_pi",
+	"nhs_mappings": [
+		{
+			"anonymised": "9999999991",
+			"mapped": "9999999999"
+		},
+		{
+			"anonymised": "9999999999",
+			"mapped": "9451944117"
+		}
+	]
+}');
 
 insert into config.config (app_id, config_id, config_data)
-select 'fhir-record-api', 'database',
-       '{
-           "url" : "jdbc:mysql://localhost:3306/compass_v2_pi?useSSL=false",
-           "username" : "root",
-           "password" : "XXXX"
-        }';
+select 'fhir-record-api', 'db_credentials',
+    '{
+	"username": "root",
+	"password": "xcxcx"
+}';
 
 insert into config.config (app_id, config_id, config_data)
 select 'fhir-record-api', 'keycloak',

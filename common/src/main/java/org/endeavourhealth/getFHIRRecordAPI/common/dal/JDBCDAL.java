@@ -1,22 +1,48 @@
 package org.endeavourhealth.getFHIRRecordAPI.common.dal;
 
 import org.apache.commons.lang3.StringUtils;
+import org.endeavourhealth.core.database.rdbms.enterprise.EnterpriseConnector;
 import org.endeavourhealth.getFHIRRecordAPI.common.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-public class JDBCDAL extends BaseJDBCDAL {
+public class JDBCDAL implements AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(JDBCDAL.class);
 
     List<String> validOrgs = new ArrayList<>();
+    Connection connection = null;
 
     public void setValidOrgs(List<String> orgs) {
         validOrgs = orgs;
+    }
+
+    public void closeSubscriberConnection() throws Exception {
+        this.connection.close();
+    }
+
+    public void setSubscriberConnection(String configName) throws Exception {
+        List<EnterpriseConnector.ConnectionWrapper> connectionWrappers = EnterpriseConnector.openSubscriberConnections(configName);
+
+        for (EnterpriseConnector.ConnectionWrapper wrapper: connectionWrappers) {
+
+            if (wrapper.hasDatabaseConnection()) {
+
+                connection = wrapper.getConnection();
+                break;
+            }
+        }
+
+        if (connection == null) {
+            LOG.info("Connection has not been found");
+            throw new Exception("Connection has not been found");
+        }
+
     }
 
     public PatientFull getPatientFull(Integer id, String nhsNumber, String dateOfBirth, boolean includeOnlyActivePatient, boolean includeOrgFilter) throws Exception {
@@ -62,7 +88,7 @@ public class JDBCDAL extends BaseJDBCDAL {
             sql = sql.concat(" and c2.code = 'R'  and p.date_of_death IS NULL and e.date_registered <= now() and (e.date_registered_end > now() or e.date_registered_end IS NULL)");
         }
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, id);
             statement.setString(2, nhsNumber);
             statement.setString(3, (dateOfBirth.equals("0") ? null : dateOfBirth));
@@ -72,15 +98,15 @@ public class JDBCDAL extends BaseJDBCDAL {
                     if (includeOrgFilter) {
                         String odsCode = resultSet.getString("ods_code");
                         if (!validOrgs.contains(odsCode)) {
-                            return result;
+                            return null;
                         }
                     }
-                    result = getPatientFull(resultSet);
+                    return getPatientFull(resultSet);
                 }
             }
         }
 
-        return result;
+        return null;
     }
 
     public PatientFull getPatientFull(String nhsNumber, boolean includeOnlyActivePatient, boolean includeOrgFilter) throws Exception {
@@ -125,7 +151,7 @@ public class JDBCDAL extends BaseJDBCDAL {
             sql = sql.concat("and c2.code = 'R' and p.date_of_death IS NULL and e.date_registered <= now() and (e.date_registered_end > now() or e.date_registered_end IS NULL)");
         }
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, nhsNumber);
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -136,12 +162,12 @@ public class JDBCDAL extends BaseJDBCDAL {
                             return result;
                         }
                     }
-                    result = getPatientFull(resultSet);
+                    return getPatientFull(resultSet);
                 }
             }
         }
 
-        return result;
+        return null;
     }
 
     public Map<Long, String> getPatientIds(String nhsNumber, Long id, boolean includeOrgFilter) throws Exception {
@@ -151,7 +177,8 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "o.name as display " +
                 "from patient p join organization o where " +
                 "(p.nhs_number = ? or p.id = ?)  and p.organization_id = o.id";
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, nhsNumber);
             statement.setLong(2, id);
 
@@ -169,6 +196,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 }
             }
         }
+
         return results;
     }
 
@@ -186,12 +214,15 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "FROM episode_of_care e join concept co on e.registration_type_concept_id = co.dbid " +
                 "where e.patient_id in (" + StringUtils.join(patientIds, ',') + ") " + "order by e.organization_id";
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next())
                     episodeOfCareFullResult.add(getEpisodeOfCareFull(resultSet));
             }
         }
+
+
         return episodeOfCareFullResult;
     }
 
@@ -216,12 +247,15 @@ public class JDBCDAL extends BaseJDBCDAL {
                " join concept propConcept on propConcept.dbid = oa.property_id " +
                 "join concept valueConcept on valueConcept.dbid = oa.value_id " +
                 "where propConcept.id = 'CM_ProblemSignificance' and oa.id=" + id;
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+
+
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next())
                     description = String.valueOf(resultSet.getString("description"));
             }
         }
+
         return description;
     }
 
@@ -232,12 +266,14 @@ public class JDBCDAL extends BaseJDBCDAL {
                 " join concept propConcept on propConcept.dbid = oa.property_id " +
                 " where propConcept.id = 'CM_ResultReferenceRange' and oa.id=" + id;
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next())
                     jsonString = String.valueOf(resultSet.getString("json_value"));
             }
         }
+
         return jsonString;
     }
 
@@ -263,7 +299,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "join code_category cat on cat.id = ccv.code_category_id "+
                 "where o.is_problem = 0 and o.patient_id in (" + StringUtils.join(id, ',') + ") ";
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next())
                     observationFullList.add(getObservationFull(resultSet));
@@ -296,7 +332,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "where  o.patient_id in (" + StringUtils.join(id, ',') + ") " +
                 "and (o.is_problem = 0  and obsCategory.code_category_id not in (34)) and o.non_core_concept_id in(13)";
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next())
                     diagnosticReportFullList.add(getDiagnosticReportFull(resultSet));
@@ -311,13 +347,14 @@ public class JDBCDAL extends BaseJDBCDAL {
 
         String sql = "select * from practitioner pr where id = ?";
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, practitionerId);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next())
                     result = (getPractitionerFull(resultSet));
             }
         }
+
         return result;
     }
 
@@ -336,12 +373,13 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
                 "where patient_id in (" + StringUtils.join(patientIds, ',') + ") " + "and ccv.code_category_id in (37) order by o.clinical_effective_date DESC";
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next())
                     procedureList.add(getProcedure(resultSet));
             }
         }
+
         return procedureList;
     }
 
@@ -353,12 +391,13 @@ public class JDBCDAL extends BaseJDBCDAL {
         "join concept ctype on ctype.dbid = pc.type_concept_id " +
                 "where patient_id = " + patientId;
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next())
                     telecomFullList.add(getTelecom(resultSet));
             }
         }
+
         return telecomFullList;
     }
 
@@ -372,7 +411,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "where ccv.code_category_id in (45) and " +
                 "patient_id = " + patientId;
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
 
                 if (resultSet.next()) {
@@ -394,7 +433,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "where ccv.code_category_id in (48) and " +
                 "patient_id = " + patientId;
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
 
                 if (resultSet.next()) {
@@ -447,7 +486,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "from location l " +
                 "where l.managing_organization_id = ?";
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, organizationId);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next())
@@ -553,7 +592,7 @@ public class JDBCDAL extends BaseJDBCDAL {
         String sql = " SELECT a.id as id, a.patient_id as patientId, a.clinical_effective_date as date, coalesce(c.description, c.name, '') as name ,c.code,a.organization_id,a.practitioner_id " +
             " FROM allergy_intolerance a join concept c on c.dbid = a.non_core_concept_id where patient_id in (" + StringUtils.join(patientids, ',') + ")";
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 allergiesFullList = getAllergyFullList(resultSet);
             }
@@ -575,7 +614,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id " +
                 "where patient_id in (" + StringUtils.join(patientIds, ',') + ") " + "and ccv.code_category_id in (33, 38) ";
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next())
                     pathAndRadObservationIds.add(resultSet.getString("id"));
@@ -591,7 +630,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "join concept c on c.dbid = o.non_core_concept_id " +
                 "where ccv.code_category_id in (2,3) and o.patient_id in  (" + StringUtils.join(patientids, ',') + ")";
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 allergiesFullList = getAllergyFullList(resultSet);
             }
@@ -606,7 +645,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                      "coalesce(name,'') as name," +
                      "coalesce(postcode,'') as postcode  from organization where id= ?";
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, organizationId);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next())
@@ -667,7 +706,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "from medication_statement ms join medication_order mo on ms.id=mo.medication_statement_id and ms.patient_id = mo.patient_id " +
                 "join concept c on c.dbid=ms.non_core_concept_id where ms.patient_id in (" + StringUtils.join(patientIds, ',') + ") " +  "group by msid";
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 result = getMedicationStatementFullList(resultSet);
             }
@@ -712,7 +751,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 " and mo.patient_id in (" + StringUtils.join(patientIds, ',') + ") " +
                 "order by clinical_effective_date, msid";
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, msId);
             try (ResultSet resultSet = statement.executeQuery()) {
                 result = getMedicationOrderFullList(resultSet);
@@ -752,7 +791,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "left join code_category_values ccv2 on ccv2.concept_dbid = a.non_core_concept_id and ccv2.code_category_id in (28,33,34,38,49) " +
                 "left join code_category cat2 on cat2.id = ccv2.code_category_id " +
                 "where a.is_problem = 1 and a.is_review = 0 and patient_id in (" + StringUtils.join(patientIds, ',') + ")";
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 conditionFullList= getConditionFullList(resultSet);
             }
@@ -793,7 +832,7 @@ public class JDBCDAL extends BaseJDBCDAL {
         }
         sql=sql+where_clause;
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 encounterFullList = getEncounterFullList(resultSet);
             }
@@ -835,7 +874,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                     " join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id "+
                      " where patient_id in (" + StringUtils.join(patientIds, ',') + ") " +  " and ccv.code_category_id in (21) ";
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 immunizationFullList = getImmunizationFullList(resultSet);
             }
@@ -880,7 +919,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 " FROM appointment a join schedule s on a.schedule_id = s.id" +
                 " join concept c on c.dbid = a.appointment_status_concept_id  where a.patient_id in (" + StringUtils.join(patientIds, ',') + ") ";
 
-            try (PreparedStatement statement = conn.prepareStatement(sql)) {
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = statement.executeQuery()) {
                     result = getAppointmentFullList(resultSet);
                 }
@@ -931,7 +970,7 @@ public class JDBCDAL extends BaseJDBCDAL {
                 "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id\n "+
                 "where patient_id in (" + StringUtils.join(patientIds, ',') + ") " + " and ccv.code_category_id in (17) order by o.clinical_effective_date DESC";
 
-            try (PreparedStatement statement = conn.prepareStatement(sql)) {
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = statement.executeQuery()) {
                     result = getFamilyMemberHistoryFullList(resultSet);
                 }
@@ -987,7 +1026,7 @@ public class JDBCDAL extends BaseJDBCDAL {
 
 
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 referralRequestFullList = getReferralRequestFullList(resultSet);
             }
@@ -1028,7 +1067,7 @@ public class JDBCDAL extends BaseJDBCDAL {
         "where ua.user_id = ? "+
         "and aap.name = ?";
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, userId);
             statement.setString(2, applicationAccessProfile);
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -1046,7 +1085,7 @@ public class JDBCDAL extends BaseJDBCDAL {
 
         java.sql.Timestamp now = new java.sql.Timestamp(System.currentTimeMillis());
 
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setTimestamp(1, now);
             stmt.setString(2, wrapper);
             stmt.setString(3, message);
@@ -1056,5 +1095,11 @@ public class JDBCDAL extends BaseJDBCDAL {
     }
 
 
-
+    @Override
+    public void close() throws Exception {
+        LOG.info("closing the JDBCDal");
+        if (connection != null) {
+            this.connection.close();
+        }
+    }
 }

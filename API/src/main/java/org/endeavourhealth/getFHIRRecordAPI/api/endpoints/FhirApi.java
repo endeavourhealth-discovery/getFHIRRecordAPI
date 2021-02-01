@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.common.config.ConfigManager;
 import org.endeavourhealth.core.database.dal.usermanager.caching.ProjectCache;
 import org.endeavourhealth.core.database.dal.usermanager.caching.UserCache;
+import org.endeavourhealth.core.database.rdbms.datasharingmanager.models.ProjectEntity;
 import org.endeavourhealth.core.database.rdbms.usermanager.models.UserProjectEntity;
 import org.endeavourhealth.getFHIRRecordAPI.common.constants.ResourceConstants;
 import org.endeavourhealth.getFHIRRecordAPI.common.dal.JDBCDAL;
@@ -61,6 +62,7 @@ public class FhirApi {
     Set<String> pathAndRadObservationIds;
     String morphString = "XXXX";
     List<String> validOrgs = new ArrayList<>();
+    String configName = null;
 
     Bundle bundle;
     org.hl7.fhir.dstu3.model.Patient patientResource;
@@ -88,6 +90,10 @@ public class FhirApi {
                     } catch (Exception e) {
                         LOG.error(e.getMessage());
                     }
+                } else {
+                    // if running locally you might not have DSM fully set up so just take the config name to use from the runMode config entry.
+                    // Note, this should never be used in a live environment
+                    getDevConfigName();
                 }
 
                 for (Parameter param : parameters) {
@@ -154,6 +160,16 @@ public class FhirApi {
         return useDSM;
     }
 
+    private void getDevConfigName() {
+        try {
+
+            configName = jsonTestNHSIdMappings.get("devConfigName").asText();
+            LOG.info("using dev config = " + configName);
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+        }
+    }
+
     private void checkUserAccessToOrganisations(String userId) throws Exception {
 
         if (userId == null || !userId.equals("")) {
@@ -167,7 +183,15 @@ public class FhirApi {
                 LOG.info("User is assigned to multiple projects...unable to find organisations");
             }
 
-            List<String> orgList = ProjectCache.getAllPublishersForValidProject(userProjects.get(0).getProjectId(), true);
+            String projectId = userProjects.get(0).getProjectId();
+
+            List<String> orgList = ProjectCache.getAllPublishersForValidProject(projectId, true);
+
+            ProjectEntity project = ProjectCache.getProjectDetails(projectId);
+
+            if (project != null) {
+                configName = project.getConfigName();
+            }
 
             validOrgs = orgList;
 
@@ -224,6 +248,7 @@ public class FhirApi {
         try (JDBCDAL viewerDAL = new JDBCDAL()) {
 
             viewerDAL.setValidOrgs(validOrgs);
+            viewerDAL.setSubscriberConnection(configName);
 
             if (id > 0 || !dateOfBirth.equals("0"))
                 patient = viewerDAL.getPatientFull(id, nhsNumber, dateOfBirth, activePatientsOnly, useDSM);
@@ -325,8 +350,6 @@ public class FhirApi {
             LOG.info("Got obs");
             addToBundle("organizations");
 
-
-
             if (!practitionerAndRoleResource.isEmpty()) {
                 for (Map.Entry entry : practitionerAndRoleResource.entrySet()) {
                     List<Resource> resourceList = (List) entry.getValue();
@@ -335,7 +358,8 @@ public class FhirApi {
             }
 
         }
-            return parseBundle();
+
+        return parseBundle();
 
     }
 
