@@ -13,6 +13,8 @@ public class MedicationStatementFull {
     private int status;
     private String date;
     private String dose;
+    private long practitionerId;
+    private long organizationId;
 
     private String cancellationDate;
 
@@ -104,5 +106,21 @@ public class MedicationStatementFull {
     public MedicationStatementFull setDose(String dose) {
         this.dose = dose;
         return this;
+    }
+
+    public long getPractitionerId() {
+        return practitionerId;
+    }
+
+    public void setPractitionerId(long practitionerId) {
+        this.practitionerId = practitionerId;
+    }
+
+    public long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(long organizationId) {
+        this.organizationId = organizationId;
     }
 }

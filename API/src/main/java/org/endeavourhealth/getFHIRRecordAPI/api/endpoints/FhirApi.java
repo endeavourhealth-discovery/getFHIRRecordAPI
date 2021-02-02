@@ -640,10 +640,18 @@ public class FhirApi {
                 medicationStatementResource.getMeta().addTag(patientCodingMap.get((medicationStatementFull.getPatientId())));
                 medicationStatementResource.setSubject(new Reference(patientResource));
 
+                if (medicationStatementFull.getPractitionerId() != 0) {
+                    org.hl7.fhir.dstu3.model.PractitionerRole practitionerRole = getPractitionerRoleResource(medicationStatementFull.getPractitionerId(), medicationStatementFull.getOrganizationId(), viewerDAL);
+                    if (practitionerRole != null) {
+                        medicationStatementResource.setInformationSource(new Reference(practitionerRole));
+                    }
+                }
+
                 medicationResource = MedicationStatement.getMedicationResource(medicationStatementFull);
                 medicationStatementResource.setMedication(new Reference(medicationResource));
 
                 //Medication Request FHIR resource
+                /*  Remove medication issues from message due to performance issues at NWL
                 List<MedicationOrderFull> medicationRequestList = null;
                 org.hl7.fhir.dstu3.model.MedicationRequest medicationRequestResource = null;
 
@@ -674,6 +682,7 @@ public class FhirApi {
                         bundle.addEntry().setResource(medicationRequestResource);
                     }
                 }
+                */
                 //Medication Request FHIR resource
 
                 bundle.addEntry().setResource(medicationStatementResource);
