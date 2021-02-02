@@ -291,7 +291,7 @@ public class JDBCDAL implements AutoCloseable {
                 "coalesce(o.result_value, '') as resultValue, " +
                 "coalesce(c.code,'') as code," +
                 "coalesce(c.name, '') as name, " +
-                "coalesce(c.description, '') as description," +
+                "coalesce(c.description, c.name, '') as description," +
                 "coalesce(cat.description, '') as category," +
                 "coalesce(o.result_value_units,'') as resultValueUnits from observation o " +
                 "join concept c on o.non_core_concept_id = c.dbid " +
@@ -323,7 +323,7 @@ public class JDBCDAL implements AutoCloseable {
                 "coalesce(o.result_value, '') as resultValue, " +
                 "coalesce(c.code,'') as code," +
                 "coalesce(c.name, '') as name, " +
-                "coalesce(c.description, '') as description," +
+                "coalesce(c.description, c.name, '') as description," +
                 "coalesce(o.result_value_units,'') as resultValueUnits, "+
                 "coalesce(cat.description, '') as category from observation o " +
                 "join concept c on o.non_core_concept_id = c.dbid " +
