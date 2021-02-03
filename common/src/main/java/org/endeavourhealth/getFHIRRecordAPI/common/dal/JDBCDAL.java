@@ -1001,7 +1001,7 @@ public class JDBCDAL implements AutoCloseable {
                     .setStatus(resultSet.getString("status"))
                     .setName(resultSet.getString("name"))
                     .setCode(resultSet.getString("code"))
-            .setPractitionerId(resultSet.getInt("practitionerId"));
+            .setPractitionerId(resultSet.getLong("practitionerId"));
             familyMemberHistoryList.add(familyMemberHistory);
         }
         return familyMemberHistoryList;
