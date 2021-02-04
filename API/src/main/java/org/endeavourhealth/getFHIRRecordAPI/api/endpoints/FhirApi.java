@@ -792,6 +792,9 @@ public class FhirApi {
 
         if (!encounterFhirMap.containsKey(encounterID)) {
             List<EncounterFull> encounterFullLis = viewerDAL.getEncounterFullList(Collections.emptyList(), encounterID, false);
+            if (encounterFullLis.size() < 1) {
+                return null;
+            }
             EncounterFull encounterFull = encounterFullLis.get(0);
             org.hl7.fhir.dstu3.model.Encounter encounterObj = Encounter.getEncounterResource(encounterFull);
             encounterObj.setSubject(new Reference(patientResource));
