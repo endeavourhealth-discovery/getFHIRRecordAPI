@@ -295,7 +295,7 @@ public class JDBCDAL implements AutoCloseable {
                 "coalesce(cat.description, '') as category," +
                 "coalesce(o.result_value_units,'') as resultValueUnits from observation o " +
                 "join concept c on o.non_core_concept_id = c.dbid " +
-                "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id and ccv.code_category_id in (34,49) " +
+                "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id and ccv.code_category_id in (49) " +
                 "join code_category cat on cat.id = ccv.code_category_id "+
                 "where o.is_problem = 0 and o.patient_id in (" + StringUtils.join(id, ',') + ") ";
 
@@ -707,7 +707,7 @@ public class JDBCDAL implements AutoCloseable {
                 "coalesce(ms.organization_id, 0) as organizationId, " +
                 "max(coalesce(mo.clinical_effective_date,'')) as last_issue_date " +
                 "from medication_statement ms join medication_order mo on ms.id=mo.medication_statement_id and ms.patient_id = mo.patient_id " +
-                "join concept c on c.dbid=ms.non_core_concept_id where ms.patient_id in (" + StringUtils.join(patientIds, ',') + ") " +  "group by msid";
+                "join concept c on c.dbid=ms.non_core_concept_id where ms.cancellation_date is null and ms.patient_id in (" + StringUtils.join(patientIds, ',') + ") " +  "group by msid";
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {

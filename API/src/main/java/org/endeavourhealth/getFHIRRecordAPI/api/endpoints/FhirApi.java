@@ -315,9 +315,12 @@ public class FhirApi {
             addFhirMedicationStatementToBundle(patientIds,viewerDAL);
 
             LOG.info("Got Meds");
-            addFhirAppointmentToBundle(patientIds,viewerDAL);
+/*
 
+            addFhirAppointmentToBundle(patientIds,viewerDAL);
             LOG.info("Got Appts");
+*/
+
             addFhirFamilyMemberHistoryToBundle(patientIds,viewerDAL);
 
             LOG.info("Got family");
@@ -342,9 +345,12 @@ public class FhirApi {
             addFhirImmunizationsToBundle(patientIds,viewerDAL);
 
             LOG.info("Got imms");
-            addFhirReferralRequestsToBundle(patientIds,viewerDAL);
 
+            /*
+            addFhirReferralRequestsToBundle(patientIds,viewerDAL);
             LOG.info("Got refs");
+            */
+
             addObservationToBundle(patientIds,viewerDAL);
 
             LOG.info("Got obs");

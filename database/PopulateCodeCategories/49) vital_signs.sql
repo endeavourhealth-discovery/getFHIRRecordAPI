@@ -1,6 +1,6 @@
 
-insert into code_category_values (code_category_id, concept_dbid)
-SELECT distinct 49, c.dbid
+insert into code_category_values_raw (code_category_id, concept_id)
+SELECT distinct 49, c.id
 FROM concept c																	
 WHERE c.id in (
 'SN_363812007',
