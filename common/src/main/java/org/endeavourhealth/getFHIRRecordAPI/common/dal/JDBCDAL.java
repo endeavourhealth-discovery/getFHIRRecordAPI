@@ -704,7 +704,8 @@ public class JDBCDAL implements AutoCloseable {
                 "max(coalesce(mo.clinical_effective_date,'')) as valueDtTime, " +
                 "ms.authorisation_type_concept_id as atCid, " +
                 "coalesce(ms.practitioner_id, 0) as practitionerId, " +
-                "coalesce(ms.organization_id, 0) as organizationId " +
+                "coalesce(ms.organization_id, 0) as organizationId, " +
+                "max(coalesce(mo.clinical_effective_date,'')) as last_issue_date " +
                 "from medication_statement ms join medication_order mo on ms.id=mo.medication_statement_id and ms.patient_id = mo.patient_id " +
                 "join concept c on c.dbid=ms.non_core_concept_id where ms.patient_id in (" + StringUtils.join(patientIds, ',') + ") " +  "group by msid";
 
@@ -735,6 +736,7 @@ public class JDBCDAL implements AutoCloseable {
                     .setDose(resultSet.getString("dose"))
                     .setCancellationDate(resultSet.getString("cancellation_date"))
                     .setValueDateTime(resultSet.getString("valueDtTime"))
+                    .setLastIssueDate(resultSet.getString("last_issue_date"))
                     .setOrganizationId(resultSet.getLong("organizationId"));
 
             medicationStatement.setPractitionerId(resultSet.getLong("practitionerId"));

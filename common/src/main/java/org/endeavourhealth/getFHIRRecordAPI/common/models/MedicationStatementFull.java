@@ -15,8 +15,9 @@ public class MedicationStatementFull {
     private String dose;
     private long practitionerId;
     private long organizationId;
-
     private String cancellationDate;
+    private String lastIssueDate;
+
 
     public long getId() {
         return id;
@@ -69,6 +70,15 @@ public class MedicationStatementFull {
 
     public MedicationStatementFull setCancellationDate(String cancellationDate) {
         this.cancellationDate = cancellationDate;
+        return this;
+    }
+
+    public String getLastIssueDate() {
+        return lastIssueDate;
+    }
+
+    public MedicationStatementFull setLastIssueDate(String lastIssueDate) {
+        this.lastIssueDate = lastIssueDate;
         return this;
     }
 

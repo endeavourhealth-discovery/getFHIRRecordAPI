@@ -14,12 +14,15 @@ public class MedicationStatement {
 
 	public static org.hl7.fhir.dstu3.model.MedicationStatement getMedicationStatementResource(MedicationStatementFull medicationStatementResult) throws Exception {
 		String clinicalEffDate = replaceNull(medicationStatementResult.getDate());
+		String lastIssueDate = replaceNull(medicationStatementResult.getLastIssueDate());
 		String dose = replaceNull(medicationStatementResult.getDose());
 		String valueDateTime = replaceNull(medicationStatementResult.getValueDateTime());
 		UUID id = UUID.randomUUID();
 
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 		Date clinicalEffDt = formatter.parse(clinicalEffDate);
+
+		Date lastIssueDt = formatter.parse(lastIssueDate);
 
 		org.hl7.fhir.dstu3.model.MedicationStatement medicationStatement = new org.hl7.fhir.dstu3.model.MedicationStatement();
 
@@ -38,6 +41,8 @@ public class MedicationStatement {
 
 		Extension extension1 = new Extension();
 		extension1.setUrl("https://fhir.hl7.org.uk/STU3/StructureDefinition/Extension-CareConnect-MedicationStatementLastIssueDate-1");
+		DateTimeType dateTimeType = (DateTimeType) extension1.addChild("valueDateTime");
+		dateTimeType.setValue(lastIssueDt);
 
 		Extension extension2 = new Extension();
 		extension2.setUrl("https://fhir.hl7.org.uk/STU3/StructureDefinition/Extension-CareConnect-PrescribingAgency-1");
