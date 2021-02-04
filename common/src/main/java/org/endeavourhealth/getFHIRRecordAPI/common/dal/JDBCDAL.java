@@ -827,8 +827,10 @@ public class JDBCDAL implements AutoCloseable {
 
     public List<EncounterFull> getEncounterFullList(List<Long> patientIds, Long encounterId, boolean isPatient) throws Exception {
         ArrayList<EncounterFull> encounterFullList =null;
-        String sql = " SELECT  e.patient_id as patientId, e.practitioner_id as practitioner_id,e.organization_id as organization_id,e.clinical_effective_date as date, e.episode_of_care_id as episode_of_care_id, e.end_date as endDate, e.id,coalesce(c.description, c.name, '') as name ,coalesce(c.code,'') as code,  CASE WHEN e.end_date IS NULL THEN 'Active' ELSE 'Past' END as status " +
-                     " FROM encounter e LEFT JOIN concept c on c.dbid = e.non_core_concept_id ";
+        String sql = " SELECT  e.patient_id as patientId, e.practitioner_id as practitioner_id,e.organization_id as organization_id,e.clinical_effective_date as date, e.episode_of_care_id as episode_of_care_id, e.end_date as endDate, e.id,coalesce(ct.encounter_type,'Administration') as name ,coalesce(c.code,'') as code,  CASE WHEN e.end_date IS NULL THEN 'Active' ELSE 'Past' END as status " +
+                     " FROM encounter e " +
+                     " JOIN concept c on c.dbid = e.non_core_concept_id " +
+                     " join consultation_types ct on ct.original_code = c.id  ";
         String where_clause="";
         if (isPatient) {
             where_clause = " where e.patient_id in (" + StringUtils.join(patientIds, ',') + ")";
