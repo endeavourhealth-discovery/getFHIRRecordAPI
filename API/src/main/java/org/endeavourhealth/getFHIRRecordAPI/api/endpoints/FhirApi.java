@@ -529,8 +529,11 @@ public class FhirApi {
     author :pp141
     */
     private void addFhirAllergiesToBundle(List<Long> patientIds ,JDBCDAL viewerDAL) throws Exception {
-        List<AllergyFull> allergies = Stream.concat(viewerDAL.getAllergyFullList(patientIds).stream(), viewerDAL.getAllergyFullListFromObservation(patientIds).stream())
-                .collect(Collectors.toList());
+        // Only return allergies from the allergy intolerance table and not from observation
+        /*List<AllergyFull> allergies = Stream.concat(viewerDAL.getAllergyFullList(patientIds).stream(), viewerDAL.getAllergyFullListFromObservation(patientIds).stream())
+                .collect(Collectors.toList());*/
+
+        List<AllergyFull> allergies = viewerDAL.getAllergyFullList(patientIds);
 
         if (allergies.size() > 0) {
 
