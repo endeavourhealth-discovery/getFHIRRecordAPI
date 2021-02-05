@@ -330,7 +330,7 @@ public class JDBCDAL implements AutoCloseable {
                 "left outer join code_category_values obsCategory on obsCategory.concept_dbid = o.non_core_concept_id and obsCategory.code_category_id  in (28,33,38,49) " +
                 "left outer join code_category cat on cat.id = obsCategory.code_category_id "+
                 "where  o.patient_id in (" + StringUtils.join(id, ',') + ") " +
-                "and (o.is_problem = 0  and obsCategory.code_category_id not in (34)) and o.non_core_concept_id in(13)";
+                "and (o.result_value_units is not null or o.result_value is not null or o.result_date is not null or o.result_text is not null or o.result_concept_id is not null) ";
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
