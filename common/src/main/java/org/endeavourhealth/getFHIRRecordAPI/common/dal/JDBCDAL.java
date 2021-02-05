@@ -839,7 +839,7 @@ public class JDBCDAL implements AutoCloseable {
         } else {
             where_clause = " where e.id = " + encounterId;
         }
-        sql=sql+where_clause;
+        sql=sql+where_clause + " and e.clinical_effective_date >= date_add(now(), interval -1 year) ";
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
