@@ -40,9 +40,9 @@ import resources.Procedure;
 import resources.ReferralRequest;
 import resources.*;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class FhirApi {
     private static final Logger LOG = LoggerFactory.getLogger(FhirApi.class);
@@ -51,6 +51,7 @@ public class FhirApi {
 
     HashMap<Long, Resource> organizationFhirMap;
     HashMap<Long, Resource> encounterFhirMap;
+    HashMap<String, Integer> vitalSignsCounter = new HashMap<>();
     Map<Long, List<Resource>> practitionerAndRoleResource;
     Map<Long, Coding> patientCodingMap;
     Map<String, Resource> episodeOfCareResourceMap;
@@ -63,6 +64,7 @@ public class FhirApi {
     String morphString = "XXXX";
     List<String> validOrgs = new ArrayList<>();
     String configName = null;
+    Date baselineDate = null;
 
     Bundle bundle;
     org.hl7.fhir.dstu3.model.Patient patientResource;
@@ -234,6 +236,12 @@ public class FhirApi {
         return getFhirBundle(id, nhsNumber, dateOfBirth, false, false) ;
     }
 
+    private void setBaselineDateForFilters() throws Exception {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.YEAR, -1);
+        baselineDate = cal.getTime();
+    }
+
     public JSONObject getFhirBundle(Integer id, String nhsNumber, String dateOfBirth, boolean onlyDemographics, boolean activePatientsOnly) throws Exception {
         organizationFhirMap = new HashMap<>();
         encounterFhirMap = new HashMap<>();
@@ -244,6 +252,10 @@ public class FhirApi {
         PatientFull patient = null;
         observationIds = new HashSet<>();
         pathAndRadObservationIds = new HashSet<>();
+
+        // set the baseline date for filters to use
+        setBaselineDateForFilters();
+        vitalSignsCounter.clear();
 
         try (JDBCDAL viewerDAL = new JDBCDAL()) {
 
@@ -565,6 +577,31 @@ public class FhirApi {
 
         }
     }
+    private boolean filterVitalSigns(ObservationFull observationFull) throws Exception {
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Date observationDate = format.parse(observationFull.getDate());
+
+        String code = observationFull.getCode();
+        String category = observationFull.getCategory();
+
+        if (!category.equals("vital-signs")) {
+            return true;
+        }
+
+        Integer counter = vitalSignsCounter.get(code);
+        if (counter == null) {
+            counter = 0;
+        }
+
+        // if the observation is within the last year or if we have less than 3 then include it
+        if (observationDate.after(baselineDate) || counter < 3) {
+            vitalSignsCounter.put(code, ++counter);
+            return true;
+        }
+
+        return false;
+    }
 
     private void addObservationToBundle(List<Long> patientIds,JDBCDAL viewerDAL) throws Exception {
         // Observation resource
@@ -578,6 +615,11 @@ public class FhirApi {
                     String observationId = String.valueOf(observationFull.getId());
                     if(!observationIds.contains(observationId) && !pathAndRadObservationIds.contains(observationId)) {
                         observationIds.add(observationId);
+
+                        // add filtering to the vital signs
+                        if (!filterVitalSigns(observationFull)) {
+                            continue;
+                        }
                         Observation observationFhir = new Observation(observationFull, viewerDAL);
                         org.hl7.fhir.dstu3.model.Observation observationResource = observationFhir.getObservationResource();
                         observationResource.getMeta().addTag(patientCodingMap.get((observationFull.getPatientId())));

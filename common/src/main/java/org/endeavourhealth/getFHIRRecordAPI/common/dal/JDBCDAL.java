@@ -297,7 +297,7 @@ public class JDBCDAL implements AutoCloseable {
                 "join concept c on o.non_core_concept_id = c.dbid " +
                 "join code_category_values ccv on ccv.concept_dbid = o.non_core_concept_id and ccv.code_category_id in (49) " +
                 "join code_category cat on cat.id = ccv.code_category_id "+
-                "where o.is_problem = 0 and o.patient_id in (" + StringUtils.join(id, ',') + ") ";
+                "where o.is_problem = 0 and o.patient_id in (" + StringUtils.join(id, ',') + ") order by o.clinical_effective_date desc";
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {
