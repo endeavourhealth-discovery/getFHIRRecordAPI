@@ -349,9 +349,11 @@ public class FhirApi {
             addDiagnosticReportToBundle(patientIds,viewerDAL);
             LOG.info("Got diag");
             */
-            addProcedureToBundle(patientIds,viewerDAL);
 
+            /*
+            addProcedureToBundle(patientIds,viewerDAL);
             LOG.info("Got proc");
+            */
             addLocationToBundle(patient.getOrglocation(),viewerDAL);
 
             LOG.info("Got loc");
