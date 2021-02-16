@@ -63,11 +63,20 @@ public class CareRecordEndpoint {
 
 
         FhirApi api = new FhirApi();
-        JSONObject result = (JSONObject) api.handleRequest(requestModel, userId);
-        return Response
-                .ok()
-                .entity(result)
-                .build();
+        try {
+            JSONObject result = (JSONObject) api.handleRequest(requestModel, userId);
+
+            return Response
+                    .ok()
+                    .entity(result)
+                    .build();
+        } catch (Exception e) {
+
+            return Response
+                    .serverError()
+                    .entity(e.getMessage())
+                    .build();
+        }
     }
 
 

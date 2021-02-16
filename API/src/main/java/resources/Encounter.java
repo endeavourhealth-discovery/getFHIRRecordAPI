@@ -20,11 +20,14 @@ public class Encounter {
         org.hl7.fhir.dstu3.model.Encounter encounter = new org.hl7.fhir.dstu3.model.Encounter();
         encounter.setId(UUID.randomUUID().toString());
 
+        /*  Set status to finished for all GP encounters
         if (encounterFull.getStatus().equalsIgnoreCase("active")) {
             encounter.setStatus(org.hl7.fhir.dstu3.model.Encounter.EncounterStatus.INPROGRESS);
         } else {
             encounter.setStatus(org.hl7.fhir.dstu3.model.Encounter.EncounterStatus.FINISHED);
         }
+        */
+        encounter.setStatus(org.hl7.fhir.dstu3.model.Encounter.EncounterStatus.FINISHED);
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
