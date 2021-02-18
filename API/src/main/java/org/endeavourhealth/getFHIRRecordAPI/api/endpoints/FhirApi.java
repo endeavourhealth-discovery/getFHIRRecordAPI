@@ -361,10 +361,8 @@ public class FhirApi {
 
             LOG.info("Got imms");
 
-            /*
             addFhirReferralRequestsToBundle(patientIds,viewerDAL);
             LOG.info("Got refs");
-            */
 
             addObservationToBundle(patientIds,viewerDAL);
 

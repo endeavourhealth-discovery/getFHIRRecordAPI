@@ -109,8 +109,16 @@ public class MedicationStatement {
 		return medicationRequest;
 	}
 
+	private static String setMedicationName(String name) {
+		name = name.replaceAll("Product containing precisely ","");
+		name = name.replaceAll("Product containing ","");
+		name = name.replaceAll("\\(clinical drug\\)","");
+		name = name.replaceAll("\\(product\\)","");
+		return name;
+	}
+
 	public static org.hl7.fhir.dstu3.model.Medication getMedicationResource(MedicationStatementFull medicationStatementResult) throws Exception {
-		String name = replaceNull(medicationStatementResult.getName());
+		String name = setMedicationName(replaceNull(medicationStatementResult.getName()));
 		String code = replaceNull(medicationStatementResult.getCode());
 		UUID id = UUID.randomUUID();
 
