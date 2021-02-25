@@ -707,7 +707,9 @@ public class JDBCDAL implements AutoCloseable {
                 "coalesce(ms.organization_id, 0) as organizationId, " +
                 "max(coalesce(mo.clinical_effective_date,'')) as last_issue_date " +
                 "from medication_statement ms join medication_order mo on ms.id=mo.medication_statement_id and ms.patient_id = mo.patient_id " +
-                "join concept c on c.dbid=ms.non_core_concept_id where ms.cancellation_date is null and ms.patient_id in (" + StringUtils.join(patientIds, ',') + ") " +  "group by msid";
+                "join concept c on c.dbid=ms.non_core_concept_id " +
+                "where (ms.cancellation_date is null or (ms.cancellation_date is not null and ms.clinical_effective_date >= date_add(now(), interval -1 year))) " +
+                "and ms.patient_id in (" + StringUtils.join(patientIds, ',') + ") " +  "group by msid";
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = statement.executeQuery()) {

@@ -320,6 +320,9 @@ public class FhirApi {
             // get pathology and radiology observations so we can filter these out
             pathAndRadObservationIds = viewerDAL.getPathologyAndRadiologyList(patientIds);
 
+            addFhirConditionsToBundle(patientIds,viewerDAL);
+
+            LOG.info("Got condition");
             addFhirAllergiesToBundle(patientIds,viewerDAL);
 
             LOG.info("Got Allergies");
@@ -336,9 +339,6 @@ public class FhirApi {
             addFhirFamilyMemberHistoryToBundle(patientIds,viewerDAL);
 
             LOG.info("Got family");
-            addFhirConditionsToBundle(patientIds,viewerDAL);
-
-            LOG.info("Got condition");
             addEpisodeOfCareToBundle(patientIds,viewerDAL);
 
             LOG.info("Got EOC");
@@ -476,7 +476,7 @@ public class FhirApi {
 
             for (ConditionFull conditionFull : conditions) {
                 String observationId = String.valueOf(conditionFull.getId());
-                if(!observationIds.contains(observationId) && !pathAndRadObservationIds.contains(observationId)) {
+                if(!observationIds.contains(observationId)) {
                     org.hl7.fhir.dstu3.model.Condition conditionFhirObj = Condition.getConditionResource(conditionFull, viewerDAL);
                     conditionFhirObj.getMeta().addTag(patientCodingMap.get(conditionFull.getPatientId()));
                     fihrConditionListObj.addEntry().setItem(new Reference(conditionFhirObj));
